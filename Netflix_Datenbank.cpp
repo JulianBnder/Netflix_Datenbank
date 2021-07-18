@@ -9,7 +9,6 @@
 #include <fstream>
 #include <sstream>
 #include <Windows.h>
-#include <conio.h>
 
 using namespace std;
 
@@ -45,7 +44,7 @@ class Filme
 public:
 	Filme();
 	~Filme();
-	int einlesen(string line, set <string>& allcategories, string &errorcorrection);
+	int einlesen(string line, string& errorcorrection, map<string, map <string, int> >& allcategories, map<string, map <string, int> >& allActors);
 	string get_description();
 	int set_description(string setter);
 
@@ -53,7 +52,7 @@ private:
 	bool Bmovie;
 
 	string title;
-	string director;
+	set <string> directors;
 	string country;
 	string description;
 
@@ -73,11 +72,11 @@ Filme::Filme()
 	Bmovie = false;
 
 	title = "uninitialised";
-	director = "uninitialised";
 	country = "uninitialised";
 	description = "uninitialised";
 
 	set <string> actors;
+	set <string> directors;
 	set <string> categories;
 
 	date_added;
@@ -91,11 +90,12 @@ Filme::~Filme()
 {
 }
 
-int Filme::einlesen(string line, set <string>& allcategories, string &errorcorrection)
+int Filme::einlesen(string line, string& errorcorrection, map<string, map <string, int> >& allCategories, map<string, map <string, int> >& allActors)
 {
 	bool		inQutation = 0; //ob der Text derzeit in Anführungszeichen ist
+	int index = 0; //der Xte Titel
+	map <string, int> reference;
 	string		sTemp; //temp String
-	string		number; //der Xte Titel
 	vector <string> Daten;
 	for (int i = 0; i < line.size(); i++)
 	{
@@ -127,6 +127,9 @@ int Filme::einlesen(string line, set <string>& allcategories, string &errorcorre
 	}
 	else
 	{
+		Daten[0][0] = '0'; //damit stringToInt richting funktioniert
+		index = stringToInt(Daten[0]) - 1;
+
 		if (Daten[1] == "Movie")
 		{
 			Bmovie = true;
@@ -137,11 +140,11 @@ int Filme::einlesen(string line, set <string>& allcategories, string &errorcorre
 		}
 		else
 		{
-			cout << number << ": " << "type is" << Daten[1] << endl;
+			cout << index << ": " << "type is" << Daten[1] << endl;
 		}
 
 		title = Daten[2];
-		director = Daten[3];
+		directors = read_set(Daten[3]);
 		actors = read_set(Daten[4]);
 		country = Daten[5];
 		if (date_added.read_date(Daten[6]))
@@ -166,29 +169,59 @@ int Filme::einlesen(string line, set <string>& allcategories, string &errorcorre
 		categories = read_set(Daten[10]);
 		description = Daten[11];
 
-		allcategories.insert(categories.begin(), categories.end());
+		for (auto element : categories)
+		{
+			if (allCategories.count(element))
+			{
+
+				allCategories.find(element)->second.insert(make_pair(title, index));
+			}
+			else
+			{
+				reference.insert(make_pair(title, index));
+				allCategories.insert(make_pair(element, reference));
+			}
+		}
+		for (auto element : actors)
+		{
+			if (allActors.count(element))
+			{
+
+				allActors.find(element)->second.insert(make_pair(title, index));
+			}
+			else
+			{
+				reference.insert(make_pair(title, index));
+				allActors.insert(make_pair(element, reference));
+			}
+		}
+		for (auto element : directors)
+		{
+			if (allActors.count(element))
+			{
+
+				allActors.find(element)->second.insert(make_pair(title, index));
+			}
+			else
+			{
+				reference.insert(make_pair(title, index));
+				allActors.insert(make_pair(element, reference));
+			}
+		}
 	}
 
 
 
 
 
-	/*
+
 #if debugging
-	cout << Daten[0] << endl;
-	for (auto i : categories)
-	{
-		cout << i << "__";
-	}
+	cout << Daten[0] << " hat Direktor ";
+
 	cout << endl;
-	for (auto i : allcategories)
-	{
-		cout << i << "__";
-	}
-	cout << endl;
-	Sleep(1000);
+	Sleep(100);
 #endif // debugging
-*/
+
 	return(0);
 }
 
@@ -361,6 +394,32 @@ int stringToInt(string inString)
 	return(temp);
 }
 
+//class Attribute
+//{
+//public:
+//	Attribute();
+//	~Attribute();
+//	int add_attribute(string title, set <string> attributes);
+//private:
+//
+//};
+//
+//Attribute::Attribute()
+//{
+//}
+//
+//Attribute::~Attribute()
+//{
+//}
+//
+//int add_attribute(string title, set <string> attributes)
+//{
+//	for (auto attribute : attributes)
+//	{
+//
+//	}
+//}
+
 /*to do:
 *categories, Länder, Schauspieler vielleicht auch richtig speichern / indexen
 *Felermeldung / Hinweise beim Einlesen
@@ -370,7 +429,8 @@ int stringToInt(string inString)
 *	Direktor
 *	Ketegorien (vllt mehrere)
 *	zw Datum x und y
-* 
+*
+*categories und actors als Klasseninstanz machen, wo mit den Tags alle Filme gespeichert sind
 *Funktionen unter Klasses definieren
 * Klassen mit Strichen trennen
 * Kommentare schreiben (deutsch)
@@ -379,10 +439,21 @@ int stringToInt(string inString)
 */
 int main()
 {
+
+	map <string, int> index_title;
+	map <string, int> index_date;
+	map<string, map <string, int> > index_categories;
+	map<string, map <string, int> > index_actors;
+	map<string, map <string, int> > index_directors;
+	//index_categories, index_actors, index_directors, index_date, index_title
+
 	vector <Filme> Sammlung;
-	string errorcorrection;
-	set <string> allcategories;
+	string errorCorrection;
 	fstream Datei;
+
+	bool abbruchbedingung = false;
+	int eingabe = 0;
+
 	Datei.open("netflix_titles.csv", ios::in); //öffnet eine Datei um sie zu lesen
 	if (!Datei.is_open())
 	{
@@ -396,40 +467,64 @@ int main()
 		{// kopiert und modifiziert von https://stackoverflow.com/questions/1120140/how-can-i-read-and-parse-csv-files-in-c (1. Antwort)
 			Filme Ftemp;
 
-			switch (Ftemp.einlesen(line, allcategories, errorcorrection))
+			switch (Ftemp.einlesen(line, errorCorrection, index_categories, index_actors))
 			{
 			case 0:
 				break;
 			case -1:
-				Sammlung[Sammlung.size() - 1].set_description(Sammlung[Sammlung.size() - 1].get_description() + errorcorrection);
+				Sammlung[Sammlung.size() - 1].set_description(Sammlung[Sammlung.size() - 1].get_description() + errorCorrection);
 #if debugging
 				cout << "Bei s" << Sammlung.size() << " ist die Beschreibung" << Sammlung[Sammlung.size() - 1].get_description() << endl << endl;
 #endif // debugging
 				break;
 			case -2:
 				getline(Datei, line);
-				Ftemp.einlesen((errorcorrection + " "/*Leerzeichen wird durch Zeilenumbruch korrumpiert*/ + line), allcategories, errorcorrection);
+				Ftemp.einlesen((errorCorrection + " "/*Leerzeichen wird durch Zeilenumbruch korrumpiert*/ + line), errorCorrection, index_categories, index_actors);
 #if debugging
-				cout << "Bei s" << Sammlung.size() << " ist die Zeile " << (errorcorrection + " " + line) << endl << endl;
+				cout << "Bei s" << Sammlung.size() << " ist die Zeile " << (errorCorrection + " " + line) << endl << endl;
 #endif // debugging
 				break;
 			default:
 				cout << "Ftemp.einlesen hat ungültiger errorcode erzeugt bei: " << endl << line << endl;
 				break;
 			}
-			
+
 			Sammlung.push_back(Ftemp);
 		}
 		Datei.close();
 	}
 
+	while (abbruchbedingung)
+	{
+	}
 	cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
 
+	cout << "Wie möchten Sie nach Filmen und Serien suchen?" << endl;
+	cout << "1 Titel" << endl;
+	cout << "2 Direktor" << endl;
+	cout << "3 Schauspieler" << endl;
+	cout << "4 Kategorie" << endl;
+	cout << "5 Erscheinungsdatum" << endl;
 
-
-	for (auto i : allcategories)
+	while (eingabe < 0 || eingabe > 5)
 	{
-		cout << i << endl;
+		cin >> eingabe;
+		switch (eingabe)
+		{
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+		default:
+			cout << "ungültiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl;
+			break;
+		}
 	}
 
 }
