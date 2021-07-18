@@ -20,7 +20,7 @@ set <string> read_set(string inString)
 	bool aftercomma = false; // Variable, ob grade ein Komma kam
 	set <string> stringset;
 	string sTemp1;
-	for (int i = 0; i < inString.size(); i++)
+	for (unsigned int i = 0; i < inString.size(); i++)
 	{
 
 		if (inString[i] == ',')
@@ -45,7 +45,7 @@ set <string> read_set(string inString)
 int stringToInt(string inString)
 {
 	int temp = 0;
-	for (int i = 0; i < inString.size(); i++)
+	for (unsigned int i = 0; i < inString.size(); i++)
 	{ // wenn es eine weitere Stelle gibt werden die bisherigen 1 Stelle nach links verschoben, also * 10 genommen und die neue wird addiert
 		if (inString[i] < '0' || inString[i] > '9')
 		{
@@ -61,6 +61,7 @@ int stringToInt(string inString)
 }
 
 //date-----------------------------------------------------------------------------------------------------------------------------------------------
+
 class date
 {
 public:
@@ -104,7 +105,7 @@ int date::read_date(string inString)
 	{
 		vector <string> Datums;
 		string string;
-		for (int i = 0; i < inString.size(); i++)
+		for (unsigned int i = 0; i < inString.size(); i++)
 		{
 			if (inString[i] == ' ' || inString[i] == ',')
 			{
@@ -276,6 +277,7 @@ int date::set_date(int dayIn, int monthIn, int yearIn)
 
 
 //Filme----------------------------------------------------------------------------------------------------------------------------------------------
+
 class Filme
 {
 public:
@@ -342,7 +344,7 @@ int Filme::einlesen(string line, string& errorcorrection)
 	bool		inQutation = 0; //ob der Text derzeit in Anführungszeichen ist
 	string		sTemp; //temp String
 	vector <string> Daten;
-	for (int i = 0; i < line.size(); i++)
+	for (unsigned int i = 0; i < line.size(); i++)
 	{
 		if (line[i] == '"')
 		{
@@ -396,7 +398,7 @@ int Filme::einlesen(string line, string& errorcorrection)
 		release = stringToInt(Daten[7]);
 		rating = Daten[8];
 		sTemp = "";
-		for (int i = 0; i < Daten[9].size(); i++)
+		for (unsigned int i = 0; i < Daten[9].size(); i++)
 		{
 			if (Daten[9][i] == ' ')
 			{
@@ -468,7 +470,7 @@ string Filme::get_description()
 
 //Funktionen ohne Klasse-----------------------------------------------------------------------------------------------------------------------------
 
-set <int> search_index(vector <Filme>& Sammlung, map<string, set <int> >& index_things, string suchwert, bool isMovie, bool moviesAndSeries)
+set <int> search_index(map<string, set <int> >& index_things, string suchwert)
 {
 	set <int> ergebnisse;
 	if (index_things.count(suchwert))
@@ -486,7 +488,8 @@ set <int> search_index(vector <Filme>& Sammlung, map<string, set <int> >& index_
 *
 * Datumseinlesefunktion reparieren (cin schein nicht zu funktionieren, suchwert ist anscheinend	 nur "January" und nicht "January 1, 2000"
 * andere Suchfunktionen ausprobieren
-* Kommentare schreiben (deutsch)
+* e-mail schreiben und fragen, was für Standards er für Kommentare hat
+* Kommentare schreiben (deutsch oder englisch)
 * Variabelnamen englisch oder Deutsch machen
 */
 int main()
@@ -552,7 +555,7 @@ int main()
 		Datei.close();
 	}
 
-	for (int i = 0; i < Sammlung.size(); i++)
+	for (unsigned int i = 0; i < Sammlung.size(); i++)
 	{
 		setWithI.insert(i);
 
@@ -686,21 +689,21 @@ int main()
 		case 2:
 			cout << "Bitte DirectorIn eingeben" << endl << endl;
 			cin >> suchwert;
-			ergebnisse = search_index(Sammlung, index_directors, suchwert, isMovie, moviesAndSeries);
+			ergebnisse = search_index(index_directors, suchwert);
 			break;
 		case 3:
 			cout << "Bitte SchauspielerIn eingeben" << endl << endl;
 			cin >> suchwert;
-			ergebnisse = search_index(Sammlung, index_actors, suchwert, isMovie, moviesAndSeries);
+			ergebnisse = search_index(index_actors, suchwert);
 			break;
 		case 4:
 			cout << "Bitte Kategorie eingeben" << endl << endl;
 			cin >> suchwert;
-			ergebnisse = search_index(Sammlung, index_categories, suchwert, isMovie, moviesAndSeries);
+			ergebnisse = search_index(index_categories, suchwert);
 			break;
 		case 5:
 
-			while (read_date_worked = 0)
+			while (read_date_worked == 0)
 			{
 				read_date_worked = 1;
 				cout << "Bitte Zeitramen in folgendem Format eingeben: (Monate auf Englisch)" << endl;
@@ -717,7 +720,7 @@ int main()
 				{
 					read_date_worked = 0;
 				}
-				if (read_date_worked = 0)
+				if (read_date_worked == 0)
 				{
 					cout << "Formar fehlerhaft, bitte nochmal versuchen" << endl << endl;
 				}
