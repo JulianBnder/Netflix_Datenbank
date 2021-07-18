@@ -29,7 +29,7 @@ set <string> read_set(string inString)
 			sTemp1 = "";
 			aftercomma = true;
 		}
-		else if (aftercomma) // nach einem Komma sollte das Leerzeichen ignoriert werden und zählt nicht zum Wort
+		else if (aftercomma) // nach einem Komma sollte das Leerzeichen ignoriert werden und zÃ¤hlt nicht zum Wort
 		{
 			aftercomma = false;
 		}
@@ -49,8 +49,8 @@ int stringToInt(string inString)
 	{ // wenn es eine weitere Stelle gibt werden die bisherigen 1 Stelle nach links verschoben, also * 10 genommen und die neue wird addiert
 		if (inString[i] < '0' || inString[i] > '9')
 		{
-			cout << "Fehler in stringToInt: Der String " << inString << "enthält Zeichen, die keine Ziffern sind" << endl;
-			return(-1);// wird bei checks abgefragt, weil nur positive Zahlen rauskommen können
+			cout << "Fehler in stringToInt: Der String " << inString << "enthÃ¤lt Zeichen, die keine Ziffern sind" << endl;
+			return(-1);// wird bei checks abgefragt, weil nur positive Zahlen rauskommen kÃ¶nnen
 		}
 		else
 		{
@@ -81,7 +81,7 @@ public:
 
 	int set_date(int dayIn, int monthIn, int yearIn);
 
-private: // Nummern sind Menschenlesbar, zählen also von 1
+private: // Nummern sind Menschenlesbar, zÃ¤hlen also von 1
 	int year;
 	int month;
 	int day;
@@ -215,7 +215,7 @@ bool date::operator< (const date& date2) const // von https://www.tutorialspoint
 		return true;
 	}
 	else
-	{ // sonst sind sie gleich oder größer
+	{ // sonst sind sie gleich oder grÃ¶ÃŸer
 		return false;
 	}
 
@@ -341,7 +341,7 @@ Filme::~Filme()
 
 int Filme::einlesen(string line, string& errorcorrection)
 {
-	bool		inQutation = 0; //ob der Text derzeit in Anführungszeichen ist
+	bool		inQutation = 0; //ob der Text derzeit in AnfÃ¼hrungszeichen ist
 	string		sTemp; //temp String
 	vector <string> Daten;
 	for (unsigned int i = 0; i < line.size(); i++)
@@ -350,7 +350,7 @@ int Filme::einlesen(string line, string& errorcorrection)
 		{
 			inQutation = !inQutation;
 		}
-		else if ((line[i] == ',') && !inQutation) //bei Kommas, die nicht zw. Anführungszeichen stehen wird der String gepusht
+		else if ((line[i] == ',') && !inQutation) //bei Kommas, die nicht zw. AnfÃ¼hrungszeichen stehen wird der String gepusht
 		{
 			Daten.push_back(sTemp);
 			sTemp = "";
@@ -486,11 +486,13 @@ set <int> search_index(map<string, set <int> >& index_things, string suchwert)
 //main-----------------------------------------------------------------------------------------------------------------------------------------------
 /*to do:
 *
-* Datumseinlesefunktion reparieren (cin schein nicht zu funktionieren, suchwert ist anscheinend	 nur "January" und nicht "January 1, 2000"
+* Datumseinlesefunktion reparieren (cin schein nicht zu funktionieren, suchwert ist anscheinend	 nur "January" und nicht "January 1, 2000" https://www.geeksforgeeks.org/cin-in-c/
 * andere Suchfunktionen ausprobieren
-* e-mail schreiben und fragen, was für Standards er für Kommentare hat
+* e-mail schreiben und fragen, was fÃ¼r Standards er fÃ¼r Kommentare hat
 * Kommentare schreiben (deutsch oder englisch)
 * Variabelnamen englisch oder Deutsch machen
+* mapname.insert(make_pair(key, value)); durch mapname[key]=value; oder mapname.insert({ key, value }) ersetzen
+* --date, date-- und ++date wegmachen (und direkt testen, ob man sie nicht doch braucht (oder nur auskommentieren)
 */
 int main()
 {
@@ -498,7 +500,7 @@ int main()
 	string errorCorrection;
 	fstream Datei;
 
-	set <int> setWithI; // für die Indexe, enthält immer nur die Nummer des aktuellen Titels
+	set <int> setWithI; // fÃ¼r die Indexe, enthÃ¤lt immer nur die Nummer des aktuellen Titels
 	map <string, int> index_name;
 	map <date, set <int> > index_date;
 	map<string, set <int> > index_categories;
@@ -515,10 +517,10 @@ int main()
 	set <int> ergebnisse;
 
 
-	Datei.open("netflix_titles.csv", ios::in); //öffnet eine Datei um sie zu lesen
+	Datei.open("netflix_titles.csv", ios::in); //Ã¶ffnet eine Datei um sie zu lesen
 	if (!Datei.is_open())
 	{
-		cout << "Fehler beim Öffnen" << endl;
+		cout << "Fehler beim Ã–ffnen" << endl;
 	}
 	else
 	{
@@ -565,7 +567,7 @@ int main()
 		{
 			if (index_categories.count(category)) // wenn die category schon vorhanden ist
 			{
-				index_categories.find(category)->second.insert(i); // füge dem Set von Titeln dieser category diesen Titel hinzu
+				index_categories.find(category)->second.insert(i); // fÃ¼ge dem Set von Titeln dieser category diesen Titel hinzu
 			}
 			else // sonst
 			{
@@ -602,7 +604,7 @@ int main()
 		}
 #endif // debugging
 
-		index_name.insert(make_pair(Sammlung[i].get_title(), i)); //Namen sind nach Test oben einzigartig, d.h. kein Set für Titel pro Namen
+		index_name.insert(make_pair(Sammlung[i].get_title(), i)); //Namen sind nach Test oben einzigartig, d.h. kein Set fÃ¼r Titel pro Namen
 
 		if (index_date.count(Sammlung[i].get_date()))
 		{
@@ -645,7 +647,7 @@ int main()
 		cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
 
 
-		while (eingabe == 0) //Suchkriterium wählen, dannach ist eingabe >= 1 und <= 5
+		while (eingabe == 0) //Suchkriterium wÃ¤hlen, dannach ist eingabe >= 1 und <= 5
 		{
 			cout << "Wie moechten Sie nach ";
 			if (isMovie || moviesAndSeries)
