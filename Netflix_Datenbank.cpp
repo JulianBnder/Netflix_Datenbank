@@ -1,4 +1,5 @@
 #define debugging 1
+#define debugging_old 1
 
 #include <iostream>
 #include <iterator>
@@ -12,229 +13,7 @@
 
 using namespace std;
 
-set <string> read_set(string inString);
-int stringToInt(string inString);
 
-class date
-{
-public:
-	date();
-	~date();
-	int read_date(string inString);
-	int cout_date();
-private: // Nummern sind Menschenlesbar, zählen also von 1
-	int year;
-	int month;
-	int day;
-};
-
-date::date()
-{
-	year = 0;
-	month = 0;
-	day = 0;
-}
-
-date::~date()
-{
-}
-
-class Filme
-{
-public:
-	Filme();
-	~Filme();
-	int einlesen(string line, string& errorcorrection, map<string, map <string, int> >& allcategories, map<string, map <string, int> >& allActors);
-	string get_description();
-	int set_description(string setter);
-
-private:
-	bool Bmovie;
-
-	string title;
-	set <string> directors;
-	string country;
-	string description;
-
-	set <string> actors;
-	set <string> categories;
-
-	date date_added;
-	int release;
-
-	string rating;
-	int duration; //in Minuten bei Filmen, in Staffeln bei Serien
-};
-
-Filme::Filme()
-{
-
-	Bmovie = false;
-
-	title = "uninitialised";
-	country = "uninitialised";
-	description = "uninitialised";
-
-	set <string> actors;
-	set <string> directors;
-	set <string> categories;
-
-	date_added;
-	release = 0;
-
-	rating = "";
-	duration = 0;
-}
-
-Filme::~Filme()
-{
-}
-
-int Filme::einlesen(string line, string& errorcorrection, map<string, map <string, int> >& allCategories, map<string, map <string, int> >& allActors)
-{
-	bool		inQutation = 0; //ob der Text derzeit in Anführungszeichen ist
-	int index = 0; //der Xte Titel
-	map <string, int> reference;
-	string		sTemp; //temp String
-	vector <string> Daten;
-	for (int i = 0; i < line.size(); i++)
-	{
-		if (line[i] == '"')
-		{
-			inQutation = !inQutation;
-		}
-		else if ((line[i] == ',') && !inQutation) //bei Kommas, die nicht zw. Anführungszeichen stehen wird der String gepusht
-		{
-			Daten.push_back(sTemp);
-			sTemp = "";
-		}
-		else
-		{
-			sTemp = sTemp + line[i];
-		}
-	}
-	Daten.push_back(sTemp);
-
-
-	if (Daten.size() < 12)
-	{
-		errorcorrection = line;
-		if (Daten.size() == 1)
-		{
-			return(-1);
-		}
-		return(-2);
-	}
-	else
-	{
-		Daten[0][0] = '0'; //damit stringToInt richting funktioniert
-		index = stringToInt(Daten[0]) - 1;
-
-		if (Daten[1] == "Movie")
-		{
-			Bmovie = true;
-		}
-		else if (Daten[1] == "TV Show")
-		{
-			Bmovie = false;
-		}
-		else
-		{
-			cout << index << ": " << "type is" << Daten[1] << endl;
-		}
-
-		title = Daten[2];
-		directors = read_set(Daten[3]);
-		actors = read_set(Daten[4]);
-		country = Daten[5];
-		if (date_added.read_date(Daten[6]))
-		{
-			cout << Daten[0] << ", " << Daten[2] << endl;
-		}
-		release = stringToInt(Daten[7]);
-		rating = Daten[8];
-		sTemp = "";
-		for (int i = 0; i < Daten[9].size(); i++)
-		{
-			if (Daten[9][i] == ' ')
-			{
-				break;
-			}
-			else
-			{
-				sTemp = sTemp + Daten[9][i];
-			}
-		}
-		duration = stringToInt(sTemp);
-		categories = read_set(Daten[10]);
-		description = Daten[11];
-
-		for (auto element : categories)
-		{
-			if (allCategories.count(element))
-			{
-
-				allCategories.find(element)->second.insert(make_pair(title, index));
-			}
-			else
-			{
-				reference.insert(make_pair(title, index));
-				allCategories.insert(make_pair(element, reference));
-			}
-		}
-		for (auto element : actors)
-		{
-			if (allActors.count(element))
-			{
-
-				allActors.find(element)->second.insert(make_pair(title, index));
-			}
-			else
-			{
-				reference.insert(make_pair(title, index));
-				allActors.insert(make_pair(element, reference));
-			}
-		}
-		for (auto element : directors)
-		{
-			if (allActors.count(element))
-			{
-
-				allActors.find(element)->second.insert(make_pair(title, index));
-			}
-			else
-			{
-				reference.insert(make_pair(title, index));
-				allActors.insert(make_pair(element, reference));
-			}
-		}
-	}
-
-
-
-
-
-
-#if debugging
-	cout << Daten[0] << " hat Direktor ";
-
-	cout << endl;
-	Sleep(100);
-#endif // debugging
-
-	return(0);
-}
-
-string Filme::get_description()
-{
-	return(description);
-}
-
-int Filme::set_description(string setter)
-{
-	description = setter;
-	return(0);
-}
 
 set <string> read_set(string inString)
 {
@@ -262,6 +41,62 @@ set <string> read_set(string inString)
 	stringset.insert(sTemp1);
 	return(stringset);
 }
+
+int stringToInt(string inString)
+{
+	int temp = 0;
+	for (int i = 0; i < inString.size(); i++)
+	{ // wenn es eine weitere Stelle gibt werden die bisherigen 1 Stelle nach links verschoben, also * 10 genommen und die neue wird addiert
+		if (inString[i] < '0' || inString[i] > '9')
+		{
+			cout << "Fehler in stringToInt: Der String " << inString << "enthält Zeichen, die keine Ziffern sind" << endl;
+			return(-1);// wird bei checks abgefragt, weil nur positive Zahlen rauskommen können
+		}
+		else
+		{
+			temp = temp * 10 + (inString[i] - '0');
+		}
+	}
+	return(temp);
+}
+
+//date-----------------------------------------------------------------------------------------------------------------------------------------------
+class date
+{
+public:
+	date();
+	~date();
+
+	int read_date(string inString);
+	bool operator< (const date& date2) const; // von https://www.tutorialsdate.com/cplusplus/cpp_overloading.htm 
+
+	// von https://docs.microsoft.com/en-us/cpp/cpp/increment-and-decrement-operator-overloading-cpp?view=msvc-160
+	date& operator++();       // Prefix increment operator.
+	date operator++(int);     // Postfix increment operator.
+
+	// Declare prefix and postfix decrement operators.
+	date& operator--();       // Prefix decrement operator.
+	date operator--(int);     // Postfix decrement operator.
+
+	int set_date(int dayIn, int monthIn, int yearIn);
+
+private: // Nummern sind Menschenlesbar, zählen also von 1
+	int year;
+	int month;
+	int day;
+};
+
+date::date()
+{
+	year = 0;
+	month = 0;
+	day = 0;
+}
+
+date::~date()
+{
+}
+
 
 int date::read_date(string inString)
 {
@@ -340,29 +175,22 @@ int date::read_date(string inString)
 			cout << "Der Monat ist " << Datums[0] << "; konnte nicht gelesen werden bei Titel ";
 			return(-1);
 		}
-		//Januar
-		//Febuar
-		//März
-		//April
-		//Juni
-		//Juli
-		//August
-		//September
-		//Oktober
-		//November
-		//Dezember
 
 		day = stringToInt(Datums[1]);
 		if (day < 1 || day > 31)
 		{
+#if debugging_old
 			cout << "Tag im Monat ist " << Datums[1] << "; wurde als " << day << " gelesen werden bei Titel ";
+#endif // debugging
 			return(-1);
 		}
 
 		year = stringToInt(Datums[2]);
 		if (year < 1878/*Erster Film*/)
 		{
+#if debugging_old_old
 			cout << "Jahr ist " << Datums[2] << "; konnte nicht gelesen werden bei Titel ";
+#endif // debugging
 			return(-1);
 		}
 	}
@@ -370,89 +198,319 @@ int date::read_date(string inString)
 	return(0);
 }
 
-int date::cout_date()
+
+bool date::operator< (const date& date2) const // von https://www.tutorialspoint.com/cplusplus/cpp_overloading.htm
 {
-	cout << day << '.' << month << '.' << year;
-	return(0);
+	if (this->year < date2.year)
+	{ // wenn das Jahr kleiner ist, ist das Datum kleiner
+		return true;
+	}
+	else if ((this->year == date2.year) && (this->month < date2.month))
+	{ // wenn das Jahr gleich und der Monat kleiner ist, ist das Datum kleiner
+		return true;
+	}
+	else if ((this->year == date2.year) && (this->month == date2.month) && (this->day < date2.day))
+	{ // wenn das Jahr und Monat gleich sind und der Tag kleiner ist, ist das Datum kleiner
+		return true;
+	}
+	else
+	{ // sonst sind sie gleich oder größer
+		return false;
+	}
+
 }
 
-int stringToInt(string inString)
+date& date::operator++()
 {
-	int temp = 0;
-	for (int i = 0; i < inString.size(); i++)
-	{ // wenn es eine weitere Stelle gibt werden die bisherigen 1 Stelle nach links verschoben, also * 10 genommen und die neue wird addiert
-		if (inString[i] < '0' || inString[i] > '9')
+	day++;
+	if (day > 31) // Monate mit 30 Tagen sind egal, es passiert nichts, wenn nach Tagen gesucht wird, die nicht existieren
+	{
+		month++;
+		day = 1;
+	}
+	if (month > 12)
+	{
+		year++;
+		month = 1;
+	}
+	return *this;
+}
+
+date date::operator++(int)
+{
+	date temp = *this;
+	++* this;
+	return temp;
+}
+
+date& date::operator--()
+{
+	day--;
+	if (day < 1)
+	{
+		month--;
+		day = 31; // Monate mit 30 Tagen sind egal, es passiert nichts, wenn nach Tagen gesucht wird, die nicht existieren
+	}
+	if (month < 1)
+	{
+		year--;
+		month = 12;
+	}
+	return *this;
+}
+
+date date::operator--(int)
+{
+	date temp = *this;
+	--* this;
+	return temp;
+}
+
+int date::set_date(int dayIn, int monthIn, int yearIn)
+{
+	day = dayIn;
+	month = monthIn;
+	year = yearIn;
+	return (0);
+}
+
+
+//Filme----------------------------------------------------------------------------------------------------------------------------------------------
+class Filme
+{
+public:
+	Filme();
+	~Filme();
+
+	int einlesen(string line, string& errorcorrection);
+
+	int set_description(string setter);
+
+	bool get_isMovie();
+	string get_title();
+	set <string> get_directors();
+	set <string> get_actors();
+	date get_date();
+	set <string> get_categories();
+	string get_description();
+
+private:
+	bool isMovie;
+
+	string title;
+	set <string> directors;
+	string country;
+	string description;
+
+	set <string> actors;
+	set <string> categories;
+
+	date date_added;
+	int release;
+
+	string rating;
+	int duration; //in Minuten bei Filmen, in Staffeln bei Serien
+};
+
+Filme::Filme()
+{
+
+	isMovie = false;
+
+	title = "uninitialised";
+	country = "uninitialised";
+	description = "uninitialised";
+
+	set <string> actors;
+	set <string> directors;
+	set <string> categories;
+
+	date_added;
+	release = 0;
+
+	rating = "";
+	duration = 0;
+}
+
+Filme::~Filme()
+{
+}
+
+
+int Filme::einlesen(string line, string& errorcorrection)
+{
+	bool		inQutation = 0; //ob der Text derzeit in Anführungszeichen ist
+	string		sTemp; //temp String
+	vector <string> Daten;
+	for (int i = 0; i < line.size(); i++)
+	{
+		if (line[i] == '"')
 		{
-			cout << "Fehler in stringToInt: Der String " << inString << "enthält Zeichen, die keine Ziffern sind" << endl;
-			return(-1);// wird bei checks abgefragt, weil nur positive Zahlen rauskommen können
+			inQutation = !inQutation;
+		}
+		else if ((line[i] == ',') && !inQutation) //bei Kommas, die nicht zw. Anführungszeichen stehen wird der String gepusht
+		{
+			Daten.push_back(sTemp);
+			sTemp = "";
 		}
 		else
 		{
-			temp = temp * 10 + (inString[i] - '0');
+			sTemp = sTemp + line[i];
 		}
 	}
-	return(temp);
+	Daten.push_back(sTemp);
+
+
+	if (Daten.size() < 12)
+	{
+		errorcorrection = line;
+		if (Daten.size() == 1)
+		{
+			return(-1);
+		}
+		return(-2);
+	}
+	else
+	{
+
+		if (Daten[1] == "Movie")
+		{
+			isMovie = true;
+		}
+		else if (Daten[1] == "TV Show")
+		{
+			isMovie = false;
+		}
+#if debugging_old
+		else
+		{
+			cout << Daten[0] << ": " << "type is" << Daten[1] << endl;
+		}
+#endif // debugging
+
+		title = Daten[2];
+		directors = read_set(Daten[3]);
+		actors = read_set(Daten[4]);
+		country = Daten[5];
+		date_added.read_date(Daten[6]);
+		release = stringToInt(Daten[7]);
+		rating = Daten[8];
+		sTemp = "";
+		for (int i = 0; i < Daten[9].size(); i++)
+		{
+			if (Daten[9][i] == ' ')
+			{
+				break;
+			}
+			else
+			{
+				sTemp = sTemp + Daten[9][i];
+			}
+		}
+		duration = stringToInt(sTemp);
+		categories = read_set(Daten[10]);
+		description = Daten[11];
+	}
+
+
+#if debugging_old
+	cout << Daten[0];
+
+	cout << endl;
+	//Sleep(100);
+#endif // debugging
+
+	return(0);
 }
 
-//class Attribute
-//{
-//public:
-//	Attribute();
-//	~Attribute();
-//	int add_attribute(string title, set <string> attributes);
-//private:
-//
-//};
-//
-//Attribute::Attribute()
-//{
-//}
-//
-//Attribute::~Attribute()
-//{
-//}
-//
-//int add_attribute(string title, set <string> attributes)
-//{
-//	for (auto attribute : attributes)
-//	{
-//
-//	}
-//}
 
+int Filme::set_description(string setter)
+{
+	description = setter;
+	return(0);
+}
+
+
+bool Filme::get_isMovie()
+{
+	return(isMovie);
+}
+
+string Filme::get_title()
+{
+	return(title);
+}
+
+set <string> Filme::get_directors()
+{
+	return(directors);
+}
+
+set <string> Filme::get_actors()
+{
+	return(actors);
+}
+
+date Filme::get_date()
+{
+	return(date_added);
+}
+
+set <string> Filme::get_categories()
+{
+	return(categories);
+}
+
+string Filme::get_description()
+{
+	return(description);
+}
+
+//Funktionen ohne Klasse-----------------------------------------------------------------------------------------------------------------------------
+
+set <int> search_index(vector <Filme>& Sammlung, map<string, set <int> >& index_things, string suchwert, bool isMovie, bool moviesAndSeries)
+{
+	set <int> ergebnisse;
+	if (index_things.count(suchwert))
+	{
+		for (auto title : index_things.find(suchwert)->second)
+		{
+			ergebnisse.insert(title);
+		}
+	}
+	return(ergebnisse);
+}
+
+//main-----------------------------------------------------------------------------------------------------------------------------------------------
 /*to do:
-*categories, Länder, Schauspieler vielleicht auch richtig speichern / indexen
-*Felermeldung / Hinweise beim Einlesen
-*Vergleichsdingens für date schreiben
-*Menue
-*	Schauspieler
-*	Direktor
-*	Ketegorien (vllt mehrere)
-*	zw Datum x und y
 *
-*categories und actors als Klasseninstanz machen, wo mit den Tags alle Filme gespeichert sind
-*Funktionen unter Klasses definieren
-* Klassen mit Strichen trennen
+* Datumseinlesefunktion reparieren (cin schein nicht zu funktionieren, suchwert ist anscheinend	 nur "January" und nicht "January 1, 2000"
+* andere Suchfunktionen ausprobieren
 * Kommentare schreiben (deutsch)
 * Variabelnamen englisch oder Deutsch machen
-* Funktionen sortieren, damit man sie oben nicht 2 mal definieren muss
 */
 int main()
 {
-
-	map <string, int> index_title;
-	map <string, int> index_date;
-	map<string, map <string, int> > index_categories;
-	map<string, map <string, int> > index_actors;
-	map<string, map <string, int> > index_directors;
-	//index_categories, index_actors, index_directors, index_date, index_title
-
 	vector <Filme> Sammlung;
 	string errorCorrection;
 	fstream Datei;
 
-	bool abbruchbedingung = false;
+	set <int> setWithI; // für die Indexe, enthält immer nur die Nummer des aktuellen Titels
+	map <string, int> index_name;
+	map <date, set <int> > index_date;
+	map<string, set <int> > index_categories;
+	map<string, set <int> > index_actors;
+	map<string, set <int> > index_directors;
+
 	int eingabe = 0;
+	string suchwert = "";
+	date dateMin, dateMax;
+	bool abbruchbedingung = false;
+	bool read_date_worked = false;
+	bool moviesAndSeries = false;
+	bool isMovie = false;
+	set <int> ergebnisse;
+
 
 	Datei.open("netflix_titles.csv", ios::in); //öffnet eine Datei um sie zu lesen
 	if (!Datei.is_open())
@@ -467,25 +525,25 @@ int main()
 		{// kopiert und modifiziert von https://stackoverflow.com/questions/1120140/how-can-i-read-and-parse-csv-files-in-c (1. Antwort)
 			Filme Ftemp;
 
-			switch (Ftemp.einlesen(line, errorCorrection, index_categories, index_actors))
+			switch (Ftemp.einlesen(line, errorCorrection))
 			{
 			case 0:
 				break;
 			case -1:
 				Sammlung[Sammlung.size() - 1].set_description(Sammlung[Sammlung.size() - 1].get_description() + errorCorrection);
-#if debugging
+#if debugging_old
 				cout << "Bei s" << Sammlung.size() << " ist die Beschreibung" << Sammlung[Sammlung.size() - 1].get_description() << endl << endl;
 #endif // debugging
 				break;
 			case -2:
 				getline(Datei, line);
-				Ftemp.einlesen((errorCorrection + " "/*Leerzeichen wird durch Zeilenumbruch korrumpiert*/ + line), errorCorrection, index_categories, index_actors);
-#if debugging
+				Ftemp.einlesen((errorCorrection + " "/*Leerzeichen wird durch Zeilenumbruch korrumpiert*/ + line), errorCorrection);
+#if debugging_old
 				cout << "Bei s" << Sammlung.size() << " ist die Zeile " << (errorCorrection + " " + line) << endl << endl;
 #endif // debugging
 				break;
 			default:
-				cout << "Ftemp.einlesen hat ungültiger errorcode erzeugt bei: " << endl << line << endl;
+				cout << "Ftemp.einlesen hat ungueltiger errorcode erzeugt bei: " << endl << line << endl;
 				break;
 			}
 
@@ -494,37 +552,236 @@ int main()
 		Datei.close();
 	}
 
-	while (abbruchbedingung)
+	for (int i = 0; i < Sammlung.size(); i++)
 	{
+		setWithI.insert(i);
+
+		// macht bei jedem Titel der/der Titel zur category / actor / director, die relevant sind
+		// , damit man alle Filme/Serien die relevant sind schnell findet
+		for (auto category : Sammlung[i].get_categories()) // geht alle categories von Titel durch
+		{
+			if (index_categories.count(category)) // wenn die category schon vorhanden ist
+			{
+				index_categories.find(category)->second.insert(i); // füge dem Set von Titeln dieser category diesen Titel hinzu
+			}
+			else // sonst
+			{
+				index_categories.insert(make_pair(category, setWithI)); // mache eine map mit der category und einem Set mit diesem Titel
+			}
+		}
+		for (auto actor : Sammlung[i].get_actors())
+		{
+			if (index_actors.count(actor))
+			{
+				index_actors.find(actor)->second.insert(i);
+			}
+			else
+			{
+				index_actors.insert(make_pair(actor, setWithI));
+			}
+		}
+		for (auto director : Sammlung[i].get_directors())
+		{
+			if (index_directors.count(director))
+			{
+				index_directors.find(director)->second.insert(i);
+			}
+			else
+			{
+				index_directors.insert(make_pair(director, setWithI));
+			}
+		}
+
+#if debugging_old
+		if (index_name.count(Sammlung[i].get_title()))
+		{
+			cout << "Folgenden Titel gibt es 2 mal: " << Sammlung[i].get_title() << endl;
+		}
+#endif // debugging
+
+		index_name.insert(make_pair(Sammlung[i].get_title(), i)); //Namen sind nach Test oben einzigartig, d.h. kein Set für Titel pro Namen
+
+		if (index_date.count(Sammlung[i].get_date()))
+		{
+			index_date.find(Sammlung[i].get_date())->second.insert(i);
+		}
+		else
+		{
+			index_date.insert(make_pair(Sammlung[i].get_date(), setWithI));
+		}
+
+		setWithI.erase(i);
 	}
-	cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
 
-	cout << "Wie möchten Sie nach Filmen und Serien suchen?" << endl;
-	cout << "1 Titel" << endl;
-	cout << "2 Direktor" << endl;
-	cout << "3 Schauspieler" << endl;
-	cout << "4 Kategorie" << endl;
-	cout << "5 Erscheinungsdatum" << endl;
-
-	while (eingabe < 0 || eingabe > 5)
+	while (abbruchbedingung == false)
 	{
-		cin >> eingabe;
+
+		cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
+		while (eingabe == 0)
+		{
+			cout << "Moechten Sie Filme(1) , Serien(2) oder beides(3) schauen?" << endl << endl;
+			cin >> eingabe;
+			switch (eingabe)
+			{
+			case 1:
+				isMovie = true;
+				break;
+			case 2:
+				// ist die Grundeinstellung
+				break;
+			case 3:
+				moviesAndSeries = true;
+				break;
+			default:
+				cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 3 eingeben." << endl << endl;
+				eingabe = 0;
+				break;
+			}
+		}
+		eingabe = 0; // resetten
+		cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
+
+
+		while (eingabe == 0) //Suchkriterium wählen, dannach ist eingabe >= 1 und <= 5
+		{
+			cout << "Wie moechten Sie nach ";
+			if (isMovie || moviesAndSeries)
+			{
+				cout << "Filme";
+			}
+			if (moviesAndSeries)
+			{
+				cout << " und ";
+			}
+			if (!isMovie || moviesAndSeries)
+			{
+				cout << "Serien";
+			}
+			cout << " suchen?" << endl << endl;
+
+			cout << "1 Titel" << endl;
+			cout << "2 DirektorIn" << endl;
+			cout << "3 SchauspielerIn" << endl;
+			cout << "4 Kategorie" << endl;
+			cout << "5 Erscheinungsdatum" << endl << endl;
+			cin >> eingabe;
+			if (eingabe < 1 || eingabe > 5)
+			{
+				eingabe = 0;
+				cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl << endl;
+			}
+		}
+
+		cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
 		switch (eingabe)
 		{
 		case 1:
+			cout << "Bitte Titel eingeben" << endl << endl;
+			cin >> suchwert;
+			if (index_name.count(suchwert))
+			{
+				ergebnisse.insert(index_name.find(suchwert)->second);
+			}
 			break;
 		case 2:
+			cout << "Bitte DirectorIn eingeben" << endl << endl;
+			cin >> suchwert;
+			ergebnisse = search_index(Sammlung, index_directors, suchwert, isMovie, moviesAndSeries);
 			break;
 		case 3:
+			cout << "Bitte SchauspielerIn eingeben" << endl << endl;
+			cin >> suchwert;
+			ergebnisse = search_index(Sammlung, index_actors, suchwert, isMovie, moviesAndSeries);
 			break;
 		case 4:
+			cout << "Bitte Kategorie eingeben" << endl << endl;
+			cin >> suchwert;
+			ergebnisse = search_index(Sammlung, index_categories, suchwert, isMovie, moviesAndSeries);
 			break;
 		case 5:
+
+			while (read_date_worked = 0)
+			{
+				read_date_worked = 1;
+				cout << "Bitte Zeitramen in folgendem Format eingeben: (Monate auf Englisch)" << endl;
+				cout << "Monat dd, yyyy   (Anfang)" << endl << "Monat dd, yyyy   (Ende)" << endl << endl;
+				cin >> suchwert;
+				cout << "dateMin liest " << suchwert << endl;
+				if (dateMin.read_date(suchwert))
+				{
+					read_date_worked = 0;
+				}
+				cin >> suchwert;
+				cout << "dateMax liest " << suchwert << endl;
+				if (dateMax.read_date(suchwert))
+				{
+					read_date_worked = 0;
+				}
+				if (read_date_worked = 0)
+				{
+					cout << "Formar fehlerhaft, bitte nochmal versuchen" << endl << endl;
+				}
+			}
+
+			dateMax++;
+				for (date i = dateMin; i < dateMax; i++)
+				{
+
+					if (index_date.count(i))
+					{
+						for (auto title : index_date.find(i)->second)
+						{
+							ergebnisse.insert(title);
+						}
+					}
+				}
 			break;
 		default:
-			cout << "ungültiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl;
 			break;
 		}
-	}
+		eingabe = 0;
 
+		if (ergebnisse.size())
+		{
+			cout << "verfuegbare Titel: " << endl;
+			for (auto number : ergebnisse)
+			{
+				if (moviesAndSeries || Sammlung[number].get_isMovie() == isMovie)
+				{
+					cout << Sammlung[number].get_title() << endl;
+				}
+			}
+		}
+		else
+		{
+			cout << "Keine Ergebnisse gefunden" << endl << endl;
+		}
+		while (eingabe == 0)
+		{
+			cout << endl << "Wollen Sie noch nach etwas anderem suchen?" << endl;
+			cout << "Ja(1) oder Nein(2)" << endl << endl;
+			cin >> eingabe;
+			if (eingabe == 1)
+			{
+				cout << "\033[2J\033[1;1H";
+				suchwert = "";
+				dateMin.set_date(0, 0, 0);
+				dateMax.set_date(0, 0, 0);
+				abbruchbedingung = false;
+				moviesAndSeries = false;
+				isMovie = false;
+				ergebnisse.clear();
+			}
+			else if (eingabe == 2)
+			{
+				abbruchbedingung = true;
+			}
+			else
+			{
+				eingabe = 0;
+				cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl << endl;
+			}
+		}
+		eingabe = 0;
+	}
 }
