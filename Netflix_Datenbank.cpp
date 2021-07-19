@@ -1,5 +1,6 @@
 #define debugging 1
 #define debugging_old 1
+#define clearscreen cout << "\033[2J\033[1;1H";
 
 #include <iostream>
 #include <iterator>
@@ -12,6 +13,7 @@
 #include <Windows.h>
 
 using namespace std;
+using std::cout;
 
 
 
@@ -72,12 +74,11 @@ public:
 	bool operator< (const date& date2) const; // von https://www.tutorialsdate.com/cplusplus/cpp_overloading.htm 
 
 	// von https://docs.microsoft.com/en-us/cpp/cpp/increment-and-decrement-operator-overloading-cpp?view=msvc-160
-	date& operator++();       // Prefix increment operator.
-	date operator++(int);     // Postfix increment operator.
+	date& operator++();       // für die for-Schleife bei der Datums-suche
+	date operator++(int);     // für komplettheit
 
-	// Declare prefix and postfix decrement operators.
-	date& operator--();       // Prefix decrement operator.
-	date operator--(int);     // Postfix decrement operator.
+	date& operator--();       // für komplettheit
+	date operator--(int);     // für komplettheit
 
 	int set_date(int dayIn, int monthIn, int yearIn);
 
@@ -221,7 +222,7 @@ bool date::operator< (const date& date2) const // von https://www.tutorialspoint
 
 }
 
-date& date::operator++()
+date& date::operator++()       // für die for-Schleife bei der Datums-suche
 {
 	day++;
 	if (day > 31) // Monate mit 30 Tagen sind egal, es passiert nichts, wenn nach Tagen gesucht wird, die nicht existieren
@@ -237,14 +238,14 @@ date& date::operator++()
 	return *this;
 }
 
-date date::operator++(int)
+date date::operator++(int)     // für komplettheit
 {
 	date temp = *this;
 	++* this;
 	return temp;
 }
 
-date& date::operator--()
+date& date::operator--()     // für komplettheit
 {
 	day--;
 	if (day < 1)
@@ -260,7 +261,7 @@ date& date::operator--()
 	return *this;
 }
 
-date date::operator--(int)
+date date::operator--(int)     // für komplettheit
 {
 	date temp = *this;
 	--* this;
@@ -486,13 +487,12 @@ set <int> search_index(map<string, set <int> >& index_things, string suchwert)
 //main-----------------------------------------------------------------------------------------------------------------------------------------------
 /*to do:
 *
-* Datumseinlesefunktion reparieren (cin schein nicht zu funktionieren, suchwert ist anscheinend	 nur "January" und nicht "January 1, 2000" https://www.geeksforgeeks.org/cin-in-c/
+* Datumseinlesefunktion reparieren (cin schein nicht zu funktionieren, suchwert ist anscheinend	 nur "January" und nicht "January 1, 2000") https://www.geeksforgeeks.org/cin-in-c/
 * andere Suchfunktionen ausprobieren
 * e-mail schreiben und fragen, was für Standards er für Kommentare hat
 * Kommentare schreiben (deutsch oder englisch)
 * Variabelnamen englisch oder Deutsch machen
-* mapname.insert(make_pair(key, value)); durch mapname[key]=value; oder mapname.insert({ key, value }) ersetzen
-* --date, date-- und ++date wegmachen (und direkt testen, ob man sie nicht doch braucht (oder nur auskommentieren)
+* Wenn das Erscheinungsjahr gefragt ist, kann man einfach ints benutzen, statt dates lol, vielleicht können wir dann nach auf_Netflix_ab sortieren
 */
 int main()
 {
@@ -509,6 +509,7 @@ int main()
 
 	int eingabe = 0;
 	string suchwert = "";
+	int datum_eingabe[3];
 	date dateMin, dateMax;
 	bool abbruchbedingung = false;
 	bool read_date_worked = false;
@@ -571,7 +572,7 @@ int main()
 			}
 			else // sonst
 			{
-				index_categories.insert(make_pair(category, setWithI)); // mache eine map mit der category und einem Set mit diesem Titel
+				index_categories.insert({ category, setWithI }); // mache eine map mit der category und einem Set mit diesem Titel
 			}
 		}
 		for (auto actor : Sammlung[i].get_actors())
@@ -582,7 +583,7 @@ int main()
 			}
 			else
 			{
-				index_actors.insert(make_pair(actor, setWithI));
+				index_actors.insert({ actor, setWithI });
 			}
 		}
 		for (auto director : Sammlung[i].get_directors())
@@ -593,7 +594,7 @@ int main()
 			}
 			else
 			{
-				index_directors.insert(make_pair(director, setWithI));
+				index_directors.insert({ director, setWithI });
 			}
 		}
 
@@ -604,7 +605,7 @@ int main()
 		}
 #endif // debugging
 
-		index_name.insert(make_pair(Sammlung[i].get_title(), i)); //Namen sind nach Test oben einzigartig, d.h. kein Set für Titel pro Namen
+		index_name.insert({ Sammlung[i].get_title(), i }); //Namen sind nach Test oben einzigartig, d.h. kein Set für Titel pro Namen
 
 		if (index_date.count(Sammlung[i].get_date()))
 		{
@@ -612,7 +613,7 @@ int main()
 		}
 		else
 		{
-			index_date.insert(make_pair(Sammlung[i].get_date(), setWithI));
+			index_date.insert({ Sammlung[i].get_date(), setWithI });
 		}
 
 		setWithI.erase(i);
@@ -621,7 +622,7 @@ int main()
 	while (abbruchbedingung == false)
 	{
 
-		cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
+		clearscreen // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
 		while (eingabe == 0)
 		{
 			cout << "Moechten Sie Filme(1) , Serien(2) oder beides(3) schauen?" << endl << endl;
@@ -644,7 +645,7 @@ int main()
 			}
 		}
 		eingabe = 0; // resetten
-		cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
+		cout << "\033[2J\033[1;1H";
 
 
 		while (eingabe == 0) //Suchkriterium wählen, dannach ist eingabe >= 1 und <= 5
@@ -677,7 +678,7 @@ int main()
 			}
 		}
 
-		cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
+		clearscreen // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
 		switch (eingabe)
 		{
 		case 1:
@@ -704,42 +705,43 @@ int main()
 			ergebnisse = search_index(index_categories, suchwert);
 			break;
 		case 5:
-
 			while (read_date_worked == 0)
 			{
 				read_date_worked = 1;
-				cout << "Bitte Zeitramen in folgendem Format eingeben: (Monate auf Englisch)" << endl;
-				cout << "Monat dd, yyyy   (Anfang)" << endl << "Monat dd, yyyy   (Ende)" << endl << endl;
-				cin >> suchwert;
-				cout << "dateMin liest " << suchwert << endl;
-				if (dateMin.read_date(suchwert))
+				cout << "Bitte Zeitramen in folgendem Format eingeben:" << endl;
+				cout << "dd mm yyyyy" << endl;
+				cout << "dd mm yyyyy" << endl << endl;
+				cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
+				if (dateMin.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
 				{
 					read_date_worked = 0;
+					cout << endl << endl << "eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
 				}
-				cin >> suchwert;
-				cout << "dateMax liest " << suchwert << endl;
-				if (dateMax.read_date(suchwert))
+#if debugging_old
+					cout << "Datum wird interpretiert als " << datum_eingabe[0] << ". " << datum_eingabe[1] << ". " << datum_eingabe[2] << endl;
+#endif // debugging
+				cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
+				if (dateMin.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
 				{
 					read_date_worked = 0;
+					cout << endl << endl << "Eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
 				}
-				if (read_date_worked == 0)
-				{
-					cout << "Formar fehlerhaft, bitte nochmal versuchen" << endl << endl;
-				}
+#if debugging_old
+				cout << "Datum wird interpretiert als " << datum_eingabe[0] << ". " << datum_eingabe[1] << ". " << datum_eingabe[2] << endl;
+#endif // debugging
 			}
 
 			dateMax++;
-				for (date i = dateMin; i < dateMax; i++)
+			for (date i = dateMin; i < dateMax; i++)
+			{
+				if (index_date.count(i))
 				{
-
-					if (index_date.count(i))
+					for (auto title : index_date.find(i)->second)
 					{
-						for (auto title : index_date.find(i)->second)
-						{
-							ergebnisse.insert(title);
-						}
+						ergebnisse.insert(title);
 					}
 				}
+			}
 			break;
 		default:
 			break;
@@ -768,7 +770,7 @@ int main()
 			cin >> eingabe;
 			if (eingabe == 1)
 			{
-				cout << "\033[2J\033[1;1H";
+				clearscreen
 				suchwert = "";
 				dateMin.set_date(0, 0, 0);
 				dateMax.set_date(0, 0, 0);
@@ -784,7 +786,7 @@ int main()
 			else
 			{
 				eingabe = 0;
-				cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl << endl;
+				cout << "ungueltiger Eingabewert, bitte 1 oder 2 eingeben." << endl << endl;
 			}
 		}
 		eingabe = 0;
