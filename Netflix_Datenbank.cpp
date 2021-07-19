@@ -1,5 +1,5 @@
 #define debugging 1
-#define debugging_old 1
+#define debugging_old 0
 #define clearscreen cout << "\033[2J\033[1;1H";
 
 #include <iostream>
@@ -105,23 +105,23 @@ int date::read_date(string inString)
 	if (inString != "")
 	{
 		vector <string> Datums;
-		string string;
+		string string_date;
 		for (unsigned int i = 0; i < inString.size(); i++)
 		{
 			if (inString[i] == ' ' || inString[i] == ',')
 			{
-				if (string != "")
+				if (string_date != "")
 				{
-					Datums.push_back(string);
-					string = "";
+					Datums.push_back(string_date);
+					string_date = "";
 				}
 			}
 			else
 			{
-				string = string + inString[i];
+				string_date = string_date + inString[i];
 			}
 		}
-		Datums.push_back(string);
+		Datums.push_back(string_date);
 
 
 		if (Datums[0] == "January")
@@ -190,7 +190,7 @@ int date::read_date(string inString)
 		year = stringToInt(Datums[2]);
 		if (year < 1878/*Erster Film*/)
 		{
-#if debugging_old_old
+#if debugging_old
 			cout << "Jahr ist " << Datums[2] << "; konnte nicht gelesen werden bei Titel ";
 #endif // debugging
 			return(-1);
@@ -342,7 +342,7 @@ Filme::~Filme()
 
 int Filme::einlesen(string line, string& errorcorrection)
 {
-	bool		inQutation = 0; //ob der Text derzeit in Anführungszeichen ist
+	bool		inQutation = false; //ob der Text derzeit in Anführungszeichen ist
 	string		sTemp; //temp String
 	vector <string> Daten;
 	for (unsigned int i = 0; i < line.size(); i++)
@@ -364,7 +364,7 @@ int Filme::einlesen(string line, string& errorcorrection)
 	Daten.push_back(sTemp);
 
 
-	if (Daten.size() < 12)
+	if (Daten.size() != 12)
 	{
 		errorcorrection = line;
 		if (Daten.size() == 1)
@@ -418,9 +418,9 @@ int Filme::einlesen(string line, string& errorcorrection)
 
 #if debugging_old
 	cout << Daten[0];
-
+	cout << country;
 	cout << endl;
-	//Sleep(100);
+	Sleep(100);
 #endif // debugging
 
 	return(0);
@@ -476,9 +476,9 @@ set <int> search_index(map<string, set <int> >& index_things, string suchwert)
 	set <int> ergebnisse;
 	if (index_things.count(suchwert))
 	{
-		for (auto title : index_things.find(suchwert)->second)
+		for (auto number : index_things.find(suchwert)->second)
 		{
-			ergebnisse.insert(title);
+			ergebnisse.insert(number);
 		}
 	}
 	return(ergebnisse);
@@ -493,9 +493,16 @@ set <int> search_index(map<string, set <int> >& index_things, string suchwert)
 * Kommentare schreiben (deutsch oder englisch)
 * Variabelnamen englisch oder Deutsch machen
 * Wenn das Erscheinungsjahr gefragt ist, kann man einfach ints benutzen, statt dates lol, vielleicht können wir dann nach auf_Netflix_ab sortieren
+* bei set_date testen, ob Eingaben sinnvoll sind
+* country muss ein set sein
+* beim Indexen vielleicht ^(auto element : Sammlung) statt normalem for loop machen, damit es leserlicher ist, wenn man die Zahl vom Film rausbekommen kann
+* vielleicht das Indexen noch debuggen, damit es sicher funktioniert
+* get_date() muss deutlicher benannt werden (hinzugefügt oder gedreht) und indexing muss geregelt werden
+* alle Kategorien ausgeben, damit man sich welche raussuchen kann (vielleicht mit Zahlen zum aussuchen)
 */
 int main()
 {
+	string line;
 	vector <Filme> Sammlung;
 	string errorCorrection;
 	fstream Datei;
@@ -525,7 +532,6 @@ int main()
 	}
 	else
 	{
-		string line;
 		getline(Datei, line); // ignoriert die 1. Zeile
 		while (getline(Datei, line))
 		{// kopiert und modifiziert von https://stackoverflow.com/questions/1120140/how-can-i-read-and-parse-csv-files-in-c (1. Antwort)
@@ -534,6 +540,7 @@ int main()
 			switch (Ftemp.einlesen(line, errorCorrection))
 			{
 			case 0:
+				Sammlung.push_back(Ftemp);
 				break;
 			case -1:
 				Sammlung[Sammlung.size() - 1].set_description(Sammlung[Sammlung.size() - 1].get_description() + errorCorrection);
@@ -544,6 +551,7 @@ int main()
 			case -2:
 				getline(Datei, line);
 				Ftemp.einlesen((errorCorrection + " "/*Leerzeichen wird durch Zeilenumbruch korrumpiert*/ + line), errorCorrection);
+				Sammlung.push_back(Ftemp);
 #if debugging_old
 				cout << "Bei s" << Sammlung.size() << " ist die Zeile " << (errorCorrection + " " + line) << endl << endl;
 #endif // debugging
@@ -553,7 +561,6 @@ int main()
 				break;
 			}
 
-			Sammlung.push_back(Ftemp);
 		}
 		Datei.close();
 	}
@@ -597,16 +604,6 @@ int main()
 				index_directors.insert({ director, setWithI });
 			}
 		}
-
-#if debugging_old
-		if (index_name.count(Sammlung[i].get_title()))
-		{
-			cout << "Folgenden Titel gibt es 2 mal: " << Sammlung[i].get_title() << endl;
-		}
-#endif // debugging
-
-		index_name.insert({ Sammlung[i].get_title(), i }); //Namen sind nach Test oben einzigartig, d.h. kein Set für Titel pro Namen
-
 		if (index_date.count(Sammlung[i].get_date()))
 		{
 			index_date.find(Sammlung[i].get_date())->second.insert(i);
@@ -616,139 +613,149 @@ int main()
 			index_date.insert({ Sammlung[i].get_date(), setWithI });
 		}
 
+#if debugging_old //um zu testen, ob es Namen 2 mal gibt, dann hätte man set <int> für index_name nemen müssen statt int
+		if (index_name.count(Sammlung[i].get_title()))
+		{
+			cout << "Folgenden Titel gibt es 2 mal: " << Sammlung[i].get_title() << endl;
+		}
+#endif // debugging
+
+		index_name.insert({ Sammlung[i].get_title(), i });
+
 		setWithI.erase(i);
 	}
 
 	while (abbruchbedingung == false)
 	{
-
 		clearscreen // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
-		while (eingabe == 0)
-		{
-			cout << "Moechten Sie Filme(1) , Serien(2) oder beides(3) schauen?" << endl << endl;
-			cin >> eingabe;
+			while (eingabe == 0)
+			{
+				cout << "Moechten Sie Filme(1) , Serien(2) oder beides(3) schauen?" << endl << endl;
+				cin >> eingabe;
+				switch (eingabe)
+				{
+				case 1:
+					isMovie = true;
+					break;
+				case 2:
+					// ist die Grundeinstellung
+					break;
+				case 3:
+					moviesAndSeries = true;
+					break;
+				default:
+					cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 3 eingeben." << endl << endl;
+					eingabe = 0;
+					break;
+				}
+			}
+		eingabe = 0; // resetten
+		clearscreen
+
+			while (eingabe == 0) //Suchkriterium wählen, dannach ist eingabe >= 1 und <= 5
+			{
+				cout << "Wie moechten Sie nach ";
+				if (isMovie || moviesAndSeries)
+				{
+					cout << "Filme";
+				}
+				if (moviesAndSeries)
+				{
+					cout << " und ";
+				}
+				if (!isMovie || moviesAndSeries)
+				{
+					cout << "Serien";
+				}
+				cout << " suchen?" << endl << endl;
+
+				cout << "1 Titel" << endl;
+				cout << "2 DirektorIn" << endl;
+				cout << "3 SchauspielerIn" << endl;
+				cout << "4 Kategorie" << endl;
+				cout << "5 Erscheinungsdatum" << endl << endl;
+				cin >> eingabe;
+				if (eingabe < 1 || eingabe > 5)
+				{
+					eingabe = 0;
+					cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl << endl;
+				}
+			}
+
+		clearscreen
 			switch (eingabe)
 			{
 			case 1:
-				isMovie = true;
+				cout << "Bitte Titel eingeben" << endl << endl;
+				cin >> suchwert;
+				if (index_name.count(suchwert))
+				{
+					ergebnisse.insert(index_name.find(suchwert)->second);
+				}
 				break;
 			case 2:
-				// ist die Grundeinstellung
+				cout << "Bitte DirectorIn eingeben" << endl << endl;
+				cin >> suchwert;
+				ergebnisse = search_index(index_directors, suchwert);
 				break;
 			case 3:
-				moviesAndSeries = true;
+				cout << "Bitte SchauspielerIn eingeben" << endl << endl;
+				cin >> suchwert;
+				ergebnisse = search_index(index_actors, suchwert);
 				break;
-			default:
-				cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 3 eingeben." << endl << endl;
-				eingabe = 0;
+			case 4:
+				cout << "Bitte Kategorie eingeben" << endl << endl;
+				cin >> suchwert;
+				ergebnisse = search_index(index_categories, suchwert);
 				break;
-			}
-		}
-		eingabe = 0; // resetten
-		cout << "\033[2J\033[1;1H";
-
-
-		while (eingabe == 0) //Suchkriterium wählen, dannach ist eingabe >= 1 und <= 5
-		{
-			cout << "Wie moechten Sie nach ";
-			if (isMovie || moviesAndSeries)
-			{
-				cout << "Filme";
-			}
-			if (moviesAndSeries)
-			{
-				cout << " und ";
-			}
-			if (!isMovie || moviesAndSeries)
-			{
-				cout << "Serien";
-			}
-			cout << " suchen?" << endl << endl;
-
-			cout << "1 Titel" << endl;
-			cout << "2 DirektorIn" << endl;
-			cout << "3 SchauspielerIn" << endl;
-			cout << "4 Kategorie" << endl;
-			cout << "5 Erscheinungsdatum" << endl << endl;
-			cin >> eingabe;
-			if (eingabe < 1 || eingabe > 5)
-			{
-				eingabe = 0;
-				cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl << endl;
-			}
-		}
-
-		clearscreen // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
-		switch (eingabe)
-		{
-		case 1:
-			cout << "Bitte Titel eingeben" << endl << endl;
-			cin >> suchwert;
-			if (index_name.count(suchwert))
-			{
-				ergebnisse.insert(index_name.find(suchwert)->second);
-			}
-			break;
-		case 2:
-			cout << "Bitte DirectorIn eingeben" << endl << endl;
-			cin >> suchwert;
-			ergebnisse = search_index(index_directors, suchwert);
-			break;
-		case 3:
-			cout << "Bitte SchauspielerIn eingeben" << endl << endl;
-			cin >> suchwert;
-			ergebnisse = search_index(index_actors, suchwert);
-			break;
-		case 4:
-			cout << "Bitte Kategorie eingeben" << endl << endl;
-			cin >> suchwert;
-			ergebnisse = search_index(index_categories, suchwert);
-			break;
-		case 5:
-			while (read_date_worked == 0)
-			{
-				read_date_worked = 1;
-				cout << "Bitte Zeitramen in folgendem Format eingeben:" << endl;
-				cout << "dd mm yyyyy" << endl;
-				cout << "dd mm yyyyy" << endl << endl;
-				cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
-				if (dateMin.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
+			case 5:
+				while (read_date_worked == 0)
 				{
-					read_date_worked = 0;
-					cout << endl << endl << "eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
-				}
-#if debugging_old
+					read_date_worked = 1;
+					cout << "Bitte Zeitramen in folgendem Format eingeben und jeweils 3 mal Enter drücken:" << endl;
+					cout << "dd mm yyyyy" << endl;
+					cout << "dd mm yyyyy" << endl << endl;
+					cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
+					if (dateMin.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
+					{
+						read_date_worked = 0;
+						cout << endl << endl << "eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
+					}
+#if debugging
 					cout << "Datum wird interpretiert als " << datum_eingabe[0] << ". " << datum_eingabe[1] << ". " << datum_eingabe[2] << endl;
 #endif // debugging
-				cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
-				if (dateMin.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
-				{
-					read_date_worked = 0;
-					cout << endl << endl << "Eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
-				}
-#if debugging_old
-				cout << "Datum wird interpretiert als " << datum_eingabe[0] << ". " << datum_eingabe[1] << ". " << datum_eingabe[2] << endl;
-#endif // debugging
-			}
-
-			dateMax++;
-			for (date i = dateMin; i < dateMax; i++)
-			{
-				if (index_date.count(i))
-				{
-					for (auto title : index_date.find(i)->second)
+					cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
+					if (dateMax.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
 					{
-						ergebnisse.insert(title);
+						read_date_worked = 0;
+						cout << endl << endl << "Eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
+					}
+#if debugging
+					cout << "Datum wird interpretiert als " << datum_eingabe[0] << ". " << datum_eingabe[1] << ". " << datum_eingabe[2] << endl;
+#endif // debugging
+				}
+
+				dateMax++;
+				for (date i = dateMin; i < dateMax; i++)
+				{
+					if (index_date.count(i))
+					{
+						for (auto title : index_date.find(i)->second)
+						{
+							ergebnisse.insert(title);
+						}
 					}
 				}
+				break;
+			default:
+				break;
 			}
-			break;
-		default:
-			break;
-		}
 		eingabe = 0;
-
-		if (ergebnisse.size())
+		if (ergebnisse.size() == 0)
+		{
+			cout << "Keine Ergebnisse gefunden" << endl << endl;
+		}
+		else
 		{
 			cout << "verfuegbare Titel: " << endl;
 			for (auto number : ergebnisse)
@@ -759,34 +766,32 @@ int main()
 				}
 			}
 		}
-		else
-		{
-			cout << "Keine Ergebnisse gefunden" << endl << endl;
-		}
+
 		while (eingabe == 0)
 		{
 			cout << endl << "Wollen Sie noch nach etwas anderem suchen?" << endl;
 			cout << "Ja(1) oder Nein(2)" << endl << endl;
 			cin >> eingabe;
-			if (eingabe == 1)
+			switch (eingabe)
 			{
+			case 1:
 				clearscreen
-				suchwert = "";
+					suchwert = "";
 				dateMin.set_date(0, 0, 0);
 				dateMax.set_date(0, 0, 0);
 				abbruchbedingung = false;
+				read_date_worked = 0;
 				moviesAndSeries = false;
 				isMovie = false;
 				ergebnisse.clear();
-			}
-			else if (eingabe == 2)
-			{
+				break;
+			case 2:
 				abbruchbedingung = true;
-			}
-			else
-			{
+				break;
+			default:
 				eingabe = 0;
 				cout << "ungueltiger Eingabewert, bitte 1 oder 2 eingeben." << endl << endl;
+				break;
 			}
 		}
 		eingabe = 0;
