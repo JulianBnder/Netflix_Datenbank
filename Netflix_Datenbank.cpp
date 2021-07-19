@@ -1,6 +1,6 @@
 #define debugging 1
 #define debugging_old 0
-#define clearscreen cout << "\033[2J\033[1;1H";
+#define clearscreen cout << "\033[2J\033[1;1H"
 
 #include <iostream>
 #include <iterator>
@@ -52,7 +52,7 @@ int stringToInt(string inString)
 		if (inString[i] < '0' || inString[i] > '9')
 		{
 			cout << "Fehler in stringToInt: Der String " << inString << "enthält Zeichen, die keine Ziffern sind" << endl;
-			return(-1);// wird bei checks abgefragt, weil nur positive Zahlen rauskommen können
+			return -1;// wird bei checks abgefragt, weil nur positive Zahlen rauskommen können
 		}
 		else
 		{
@@ -71,6 +71,8 @@ public:
 	~date();
 
 	int read_date(string inString);
+	int set_date(int dayIn, int monthIn, int yearIn);
+
 	bool operator< (const date& date2) const; // von https://www.tutorialsdate.com/cplusplus/cpp_overloading.htm 
 
 	// von https://docs.microsoft.com/en-us/cpp/cpp/increment-and-decrement-operator-overloading-cpp?view=msvc-160
@@ -79,8 +81,6 @@ public:
 
 	date& operator--();       // für komplettheit
 	date operator--(int);     // für komplettheit
-
-	int set_date(int dayIn, int monthIn, int yearIn);
 
 private: // Nummern sind Menschenlesbar, zählen also von 1
 	int year;
@@ -123,7 +123,7 @@ int date::read_date(string inString)
 		}
 		Datums.push_back(string_date);
 
-
+		//ist kein switch-case, weil das nur mit int, char und ähnlichen Variabeltypen möglich ist
 		if (Datums[0] == "January")
 		{
 			month = 1;
@@ -175,7 +175,7 @@ int date::read_date(string inString)
 		else
 		{
 			cout << "Der Monat ist " << Datums[0] << "; konnte nicht gelesen werden bei Titel ";
-			return(-1);
+			return -1;
 		}
 
 		day = stringToInt(Datums[1]);
@@ -184,7 +184,7 @@ int date::read_date(string inString)
 #if debugging_old
 			cout << "Tag im Monat ist " << Datums[1] << "; wurde als " << day << " gelesen werden bei Titel ";
 #endif // debugging
-			return(-1);
+			return -1;
 		}
 
 		year = stringToInt(Datums[2]);
@@ -193,11 +193,23 @@ int date::read_date(string inString)
 #if debugging_old
 			cout << "Jahr ist " << Datums[2] << "; konnte nicht gelesen werden bei Titel ";
 #endif // debugging
-			return(-1);
+			return -1;
 		}
 	}
 
-	return(0);
+	return 0;
+}
+
+int date::set_date(int dayIn, int monthIn, int yearIn)
+{
+	if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1878/*Erster Film*/)
+	{
+		return -1;
+	}
+	day = dayIn;
+	month = monthIn;
+	year = yearIn;
+	return (0);
 }
 
 
@@ -268,14 +280,6 @@ date date::operator--(int)     // für komplettheit
 	return temp;
 }
 
-int date::set_date(int dayIn, int monthIn, int yearIn)
-{
-	day = dayIn;
-	month = monthIn;
-	year = yearIn;
-	return (0);
-}
-
 
 //Filme----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -293,7 +297,8 @@ public:
 	string get_title();
 	set <string> get_directors();
 	set <string> get_actors();
-	date get_date();
+	date get_date_added();
+	int get_release();
 	set <string> get_categories();
 	string get_description();
 
@@ -302,7 +307,7 @@ private:
 
 	string title;
 	set <string> directors;
-	string country;
+	set <string> countries;
 	string description;
 
 	set <string> actors;
@@ -317,22 +322,13 @@ private:
 
 Filme::Filme()
 {
-
 	isMovie = false;
+	release = 0;
+	duration = 0;
 
 	title = "uninitialised";
-	country = "uninitialised";
+	rating = "uninitialised";
 	description = "uninitialised";
-
-	set <string> actors;
-	set <string> directors;
-	set <string> categories;
-
-	date_added;
-	release = 0;
-
-	rating = "";
-	duration = 0;
 }
 
 Filme::~Filme()
@@ -369,9 +365,9 @@ int Filme::einlesen(string line, string& errorcorrection)
 		errorcorrection = line;
 		if (Daten.size() == 1)
 		{
-			return(-1);
+			return -1;
 		}
-		return(-2);
+		return -2;
 	}
 	else
 	{
@@ -394,7 +390,7 @@ int Filme::einlesen(string line, string& errorcorrection)
 		title = Daten[2];
 		directors = read_set(Daten[3]);
 		actors = read_set(Daten[4]);
-		country = Daten[5];
+		countries = read_set(Daten[5]);
 		date_added.read_date(Daten[6]);
 		release = stringToInt(Daten[7]);
 		rating = Daten[8];
@@ -423,14 +419,14 @@ int Filme::einlesen(string line, string& errorcorrection)
 	Sleep(100);
 #endif // debugging
 
-	return(0);
+	return 0;
 }
 
 
 int Filme::set_description(string setter)
 {
 	description = setter;
-	return(0);
+	return 0;
 }
 
 
@@ -454,9 +450,14 @@ set <string> Filme::get_actors()
 	return(actors);
 }
 
-date Filme::get_date()
+date Filme::get_date_added()
 {
 	return(date_added);
+}
+
+int Filme::get_release()
+{
+	return release;
 }
 
 set <string> Filme::get_categories()
@@ -489,16 +490,18 @@ set <int> search_index(map<string, set <int> >& index_things, string suchwert)
 *
 * Datumseinlesefunktion reparieren (cin schein nicht zu funktionieren, suchwert ist anscheinend	 nur "January" und nicht "January 1, 2000") https://www.geeksforgeeks.org/cin-in-c/
 * andere Suchfunktionen ausprobieren
-* e-mail schreiben und fragen, was für Standards er für Kommentare hat
-* Kommentare schreiben (deutsch oder englisch)
+* es gibt Index für date_added and release, man sollte noch nach release sortieren können
+*
+* Kommentare schreiben (deutsch oder englisch), die Elementnamen in for loops muss man noch anpassen
 * Variabelnamen englisch oder Deutsch machen
-* Wenn das Erscheinungsjahr gefragt ist, kann man einfach ints benutzen, statt dates lol, vielleicht können wir dann nach auf_Netflix_ab sortieren
-* bei set_date testen, ob Eingaben sinnvoll sind
-* country muss ein set sein
-* beim Indexen vielleicht ^(auto element : Sammlung) statt normalem for loop machen, damit es leserlicher ist, wenn man die Zahl vom Film rausbekommen kann
+* Wenn das Erscheinungsjahr gefragt ist, kann man einfach ints benutzen statt dates lol, vielleicht können wir dann nach auf_Netflix_ab sortieren
+*
 * vielleicht das Indexen noch debuggen, damit es sicher funktioniert
-* get_date() muss deutlicher benannt werden (hinzugefügt oder gedreht) und indexing muss geregelt werden
-* alle Kategorien ausgeben, damit man sich welche raussuchen kann (vielleicht mit Zahlen zum aussuchen)
+*
+* das "verfügbare Titel wegmachen und bei jeder Option sagen, was es ist, also "verfügbare " << suchwert;
+* beim Indexen vielleicht (auto element : Sammlung) statt normalem for loop machen, damit es leserlicher ist, wenn man die Zahl vom Film rausbekommen kann
+* Bei den Filmen die Informationen geben (nur wenn sie existieren) (rating, verfügbare Länder, Dauer, hochladedatum)
+* Vielleicht an googlesuche zu dem Titel weiterleiten, den man raussucht
 */
 int main()
 {
@@ -509,17 +512,19 @@ int main()
 
 	set <int> setWithI; // für die Indexe, enthält immer nur die Nummer des aktuellen Titels
 	map <string, int> index_name;
-	map <date, set <int> > index_date;
+	map <int, set <int > > index_release;
+	map <date, set <int> > index_date_added;
 	map<string, set <int> > index_categories;
 	map<string, set <int> > index_actors;
 	map<string, set <int> > index_directors;
 
 	int eingabe = 0;
+	int i = 0; // Iterator für Kategorienauswahl
 	string suchwert = "";
 	int datum_eingabe[3];
 	date dateMin, dateMax;
 	bool abbruchbedingung = false;
-	bool read_date_worked = false;
+	bool input_worked = false;
 	bool moviesAndSeries = false;
 	bool isMovie = false;
 	set <int> ergebnisse;
@@ -604,13 +609,21 @@ int main()
 				index_directors.insert({ director, setWithI });
 			}
 		}
-		if (index_date.count(Sammlung[i].get_date()))
+		if (index_date_added.count(Sammlung[i].get_date_added()))
 		{
-			index_date.find(Sammlung[i].get_date())->second.insert(i);
+			index_date_added.find(Sammlung[i].get_date_added())->second.insert(i);
 		}
 		else
 		{
-			index_date.insert({ Sammlung[i].get_date(), setWithI });
+			index_date_added.insert({ Sammlung[i].get_date_added(), setWithI });
+		}
+		if (index_release.count(Sammlung[i].get_release()))
+		{
+			index_release.find(Sammlung[i].get_release())->second.insert(i);
+		}
+		else
+		{
+			index_release.insert({ Sammlung[i].get_release(), setWithI });
 		}
 
 #if debugging_old //um zu testen, ob es Namen 2 mal gibt, dann hätte man set <int> für index_name nemen müssen statt int
@@ -627,129 +640,162 @@ int main()
 
 	while (abbruchbedingung == false)
 	{
-		clearscreen // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
-			while (eingabe == 0)
-			{
-				cout << "Moechten Sie Filme(1) , Serien(2) oder beides(3) schauen?" << endl << endl;
-				cin >> eingabe;
-				switch (eingabe)
-				{
-				case 1:
-					isMovie = true;
-					break;
-				case 2:
-					// ist die Grundeinstellung
-					break;
-				case 3:
-					moviesAndSeries = true;
-					break;
-				default:
-					cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 3 eingeben." << endl << endl;
-					eingabe = 0;
-					break;
-				}
-			}
-		eingabe = 0; // resetten
-		clearscreen
-
-			while (eingabe == 0) //Suchkriterium wählen, dannach ist eingabe >= 1 und <= 5
-			{
-				cout << "Wie moechten Sie nach ";
-				if (isMovie || moviesAndSeries)
-				{
-					cout << "Filme";
-				}
-				if (moviesAndSeries)
-				{
-					cout << " und ";
-				}
-				if (!isMovie || moviesAndSeries)
-				{
-					cout << "Serien";
-				}
-				cout << " suchen?" << endl << endl;
-
-				cout << "1 Titel" << endl;
-				cout << "2 DirektorIn" << endl;
-				cout << "3 SchauspielerIn" << endl;
-				cout << "4 Kategorie" << endl;
-				cout << "5 Erscheinungsdatum" << endl << endl;
-				cin >> eingabe;
-				if (eingabe < 1 || eingabe > 5)
-				{
-					eingabe = 0;
-					cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl << endl;
-				}
-			}
-
-		clearscreen
+		clearscreen; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
+		while (eingabe == 0)
+		{
+			cout << "Moechten Sie Filme(1) , Serien(2) oder beides(3) schauen?" << endl << endl;
+			cin >> eingabe;
 			switch (eingabe)
 			{
 			case 1:
-				cout << "Bitte Titel eingeben" << endl << endl;
-				cin >> suchwert;
-				if (index_name.count(suchwert))
-				{
-					ergebnisse.insert(index_name.find(suchwert)->second);
-				}
+				isMovie = true;
 				break;
 			case 2:
-				cout << "Bitte DirectorIn eingeben" << endl << endl;
-				cin >> suchwert;
-				ergebnisse = search_index(index_directors, suchwert);
+				// ist die Grundeinstellung
 				break;
 			case 3:
-				cout << "Bitte SchauspielerIn eingeben" << endl << endl;
-				cin >> suchwert;
-				ergebnisse = search_index(index_actors, suchwert);
-				break;
-			case 4:
-				cout << "Bitte Kategorie eingeben" << endl << endl;
-				cin >> suchwert;
-				ergebnisse = search_index(index_categories, suchwert);
-				break;
-			case 5:
-				while (read_date_worked == 0)
-				{
-					read_date_worked = 1;
-					cout << "Bitte Zeitramen in folgendem Format eingeben und jeweils 3 mal Enter drücken:" << endl;
-					cout << "dd mm yyyyy" << endl;
-					cout << "dd mm yyyyy" << endl << endl;
-					cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
-					if (dateMin.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
-					{
-						read_date_worked = 0;
-						cout << endl << endl << "eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
-					}
-#if debugging
-					cout << "Datum wird interpretiert als " << datum_eingabe[0] << ". " << datum_eingabe[1] << ". " << datum_eingabe[2] << endl;
-#endif // debugging
-					cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
-					if (dateMax.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
-					{
-						read_date_worked = 0;
-						cout << endl << endl << "Eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
-					}
-#if debugging
-					cout << "Datum wird interpretiert als " << datum_eingabe[0] << ". " << datum_eingabe[1] << ". " << datum_eingabe[2] << endl;
-#endif // debugging
-				}
-
-				dateMax++;
-				for (date i = dateMin; i < dateMax; i++)
-				{
-					if (index_date.count(i))
-					{
-						for (auto title : index_date.find(i)->second)
-						{
-							ergebnisse.insert(title);
-						}
-					}
-				}
+				moviesAndSeries = true;
 				break;
 			default:
+				cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 3 eingeben." << endl << endl;
+				eingabe = 0;
 				break;
 			}
+		}
+		eingabe = 0; // resetten
+		clearscreen;
+
+		while (eingabe == 0) //Suchkriterium wählen, dannach ist eingabe >= 1 und <= 5
+		{
+			cout << "Wie moechten Sie nach ";
+			if (isMovie || moviesAndSeries)
+			{
+				cout << "Filme";
+			}
+			if (moviesAndSeries)
+			{
+				cout << " und ";
+			}
+			if (!isMovie || moviesAndSeries)
+			{
+				cout << "Serien";
+			}
+			cout << " suchen?" << endl << endl;
+
+			cout << "1 Titel" << endl;
+			cout << "2 DirektorIn" << endl;
+			cout << "3 SchauspielerIn" << endl;
+			cout << "4 Kategorie" << endl;
+			cout << "5 Erscheinungsdatum" << endl << endl;
+			cin >> eingabe;
+			if (eingabe < 1 || eingabe > 5)
+			{
+				eingabe = 0;
+				cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl << endl;
+			}
+		}
+
+		clearscreen;
+		switch (eingabe)
+		{
+		case 1:
+			cout << "Bitte Titel eingeben" << endl << endl;
+			cin >> suchwert;
+			if (index_name.count(suchwert))
+			{
+				ergebnisse.insert(index_name.find(suchwert)->second);
+			}
+			break;
+		case 2:
+			cout << "Bitte DirectorIn eingeben" << endl << endl;
+			cin >> suchwert;
+			ergebnisse = search_index(index_directors, suchwert);
+			break;
+		case 3:
+			cout << "Bitte SchauspielerIn eingeben" << endl << endl;
+			cin >> suchwert;
+			ergebnisse = search_index(index_actors, suchwert);
+			break;
+		case 4:
+			cout << "Um eine Kategorie zu wählen bitte Zahl eingeben:" << endl;
+			for (auto category : index_categories)
+			{
+				i++; // zeigt eine Zahl  von jeder Kategorie, muss manuell sein, weil man mit einem normalen for-loop nicht durch ma iterieren kann
+				if ( i < 10)
+				{
+					cout << " ";
+				}
+				cout << i << ": " << category.first << endl;
+				Sleep(50); //weils cool ausshieht
+			}
+			cout << endl;
+			while (!input_worked)
+			{
+				cin >> i;
+				if (i < 1 || i > index_categories.size()) // i muss innerhalb der Grösse der map sein
+				{
+					cout << endl << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und " << index_categories.size() << " eingeben." << endl << endl;
+					//testen, ob es klappt wenn man die höchste Zahl und die eins drüber eingibt
+				}
+				else
+				{
+					input_worked = true;
+				}
+			}
+			input_worked = false; //resetten
+			for (auto category : index_categories)
+			{
+				i--; // bei dem Wert, der bei der Kategorie stand, wird die Kategorie eingelesen
+				if (i == 0)
+				{
+					suchwert = category.first;
+				}
+			}
+			i = 0; // resetten
+			ergebnisse = search_index(index_categories, suchwert);
+			break;
+		case 5:
+			while (!input_worked)
+			{
+				input_worked = true;
+				cout << "Bitte Zeitramen in folgendem Format eingeben und jeweils 3 mal Enter drücken:" << endl;
+				cout << "dd mm yyyyy" << endl;
+				cout << "dd mm yyyyy" << endl << endl;
+				cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
+				if (dateMin.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
+				{
+					input_worked = 0;
+					cout << endl << endl << "eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
+				}
+#if debugging
+				cout << "Datum wird interpretiert als " << datum_eingabe[0] << ". " << datum_eingabe[1] << ". " << datum_eingabe[2] << endl;
+#endif // debugging
+				cin >> datum_eingabe[0] >> datum_eingabe[1] >> datum_eingabe[2];
+				if (dateMax.set_date(datum_eingabe[0], datum_eingabe[1], datum_eingabe[2]))
+				{
+					input_worked = 0;
+					cout << endl << endl << "Eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
+				}
+#if debugging
+				cout << "Datum wird interpretiert als " << datum_eingabe[0] << ". " << datum_eingabe[1] << ". " << datum_eingabe[2] << endl;
+#endif // debugging
+			}
+
+			dateMax++;
+			for (date i = dateMin; i < dateMax; i++)
+			{
+				if (index_date_added.count(i))
+				{
+					for (auto title : index_date_added.find(i)->second)
+					{
+						ergebnisse.insert(title);
+					}
+				}
+			}
+			break;
+		default:
+			break;
+		}
 		eingabe = 0;
 		if (ergebnisse.size() == 0)
 		{
@@ -775,12 +821,12 @@ int main()
 			switch (eingabe)
 			{
 			case 1:
-				clearscreen
-					suchwert = "";
+				clearscreen;
+				suchwert = "";
 				dateMin.set_date(0, 0, 0);
 				dateMax.set_date(0, 0, 0);
 				abbruchbedingung = false;
-				read_date_worked = 0;
+				input_worked = 0;
 				moviesAndSeries = false;
 				isMovie = false;
 				ergebnisse.clear();
