@@ -512,6 +512,7 @@ set <int> search_index(map<string, set <int> >& index_things, string suchwert)
 * beim Indexen vielleicht (auto element : Sammlung) statt normalem for loop machen, damit es leserlicher ist, wenn man die Zahl vom Film rausbekommen kann
 * Bei den Filmen die Informationen geben (nur wenn sie existieren) (rating, verfügbare Länder, Dauer, hochladedatum)
 * Vielleicht an googlesuche zu dem Titel weiterleiten, den man raussucht
+* 
 */
 int main()
 {
