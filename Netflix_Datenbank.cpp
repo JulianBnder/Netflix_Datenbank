@@ -1,5 +1,5 @@
 #define debugging true
-#define debugging_old false
+#define debugging_old true
 #define extra_features true
 #define time_to_read 2000 //wie lange Debugging messages angezeigt werden
 
@@ -185,7 +185,7 @@ int date::read_date(string inString)
 		if (day < 1 || day > 31)
 		{
 #if debugging_old
-			cout << "Tag im Monat ist " << Datums[1] << "; wurde als " << day << " gelesen werden bei Titel ";
+			cout << "Tag im Monat ist " << Datums[1] << "; wurde als " << day << " gelesen bei Titel ";
 #endif // debugging
 			return -1;
 		}
@@ -236,7 +236,7 @@ bool date::operator< (const date& date2) const // von https://www.tutorialspoint
 		return true;
 	}
 	else
-	{ // sonst sind sie gleich oder größer
+	{ // sonst ist es gleich oder  größer
 		return false;
 	}
 
@@ -392,8 +392,8 @@ int Filme::einlesen(string line, string& errorcorrection)
 		else
 		{
 			cout << Daten[0] << ": " << "type is" << Daten[1] << endl;
+			Sleep(time_to_read);
 		}
-		Sleep(time_to_read);
 #endif // debugging
 
 		title = Daten[2];
@@ -422,9 +422,9 @@ int Filme::einlesen(string line, string& errorcorrection)
 
 
 #if debugging_old
-	cout << Daten[0];
+	cout << Daten[0];/*
 	cout << " was released in ";
-	cout << Daten[7];
+	cout << Daten[7];*/
 	cout << endl;
 	//Sleep(100);
 #endif // debugging
@@ -498,14 +498,13 @@ set <int> search_index(map<string, set <int> >& index_things, string suchwert)
 //main-----------------------------------------------------------------------------------------------------------------------------------------------
 //to do:
 /*
+* bug beheben, der dafür sorgt, dass es sich am Ende wiederholt, wenn gefragt wird, ob man noch mehr suchen will
 * andere Suchfunktionen ausprobieren
-* es gibt Index für date_added and release, man sollte noch nach release sortieren können
 * in welchem Land sind sie (0 für Global) und dann nur Filme zeigen, die im Land verfügbar sind
 *
 * nach date_added sortieren soll in #if extra_features (bei wie viele Optionen es zum  wählen gibt und bei der Anzeige der Optionen
 * Kommentare schreiben (deutsch oder englisch), die Elementnamen in for loops muss man noch anpassen
 * Variabelnamen englisch oder Deutsch machen
-* Wenn das Erscheinungsjahr gefragt ist, kann man einfach ints benutzen statt dates lol, vielleicht können wir dann nach auf_Netflix_ab sortieren
 *
 * vielleicht das Indexen noch debuggen, damit es sicher funktioniert
 *
@@ -590,7 +589,7 @@ int main()
 	{
 		setWithI.insert(i);
 
-		// macht bei jedem Titel der/der Titel zur category / actor / director, die relevant sind
+		// macht bei jedem Film der/der Titel zur category / actor / director, die relevant sind
 		// , damit man alle Filme/Serien die relevant sind schnell findet
 		for (auto category : Sammlung[i].get_categories()) // geht alle categories von Titel durch
 		{
@@ -733,7 +732,7 @@ int main()
 		}
 		case 2:
 		{
-			cout << "Bitte DirectorIn eingeben" << endl << endl;
+			cout << "Bitte DirektorIn eingeben" << endl << endl;
 			cin >> suchwert;
 			ergebnisse = search_index(index_directors, suchwert);
 			break;
@@ -921,8 +920,8 @@ int main()
 		{
 			cout << endl << "Wollen Sie noch nach etwas anderem suchen?" << endl;
 			cout << "Ja(1) oder Nein(2)" << endl << endl;
-			cin.clear();
 			cin >> eingabe;
+			cout << eingabe << endl;
 			switch (eingabe)
 			{
 			case 1:
