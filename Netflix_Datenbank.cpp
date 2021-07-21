@@ -1,26 +1,4 @@
-//to do:
-/*
-* bug beheben, der dafür sorgt, dass es sich am Ende wiederholt, wenn gefragt wird, ob man noch mehr suchen will
-* andere Suchfunktionen ausprobieren
-* in welchem Land sind sie (0 für Global) und dann nur Filme zeigen, die im Land verfügbar sind
-*
-* nach date_added sortieren soll in #if extra_features (bei wie viele Optionen es zum  wählen gibt und bei der Anzeige der Optionen
-* Kommentare schreiben (deutsch oder englisch), die Elementnamen in for loops muss man noch anpassen
-*
-* checken, ob ich abfrage , ob ein Suchwert in einem Index existiert befor ich es suche, muss ich namlich nicht, weil es in der Funktion gescheckt wird
-* vielleicht das Indexen noch debuggen, damit es sicher funktioniert
-*
-* beim Indexen vielleicht (auto element : Sammlung) statt normalem for loop machen, damit es leserlicher ist, wenn man die Zahl vom Film rausbekommen kann
-* Bei den Filmen die Informationen geben (nur wenn sie existieren) (rating, verfügbare Länder, Dauer, hochladedatum)
-* Vielleicht an googlesuche zu dem Titel weiterleiten, den man raussucht
-* vor Hochladen (Finale Version auf Github committen oben die Defnition richtig setzten (debugging = false und so)
-* vor Hochladen alle #if debugging wegmachen, die es nicht braucht
-* Code auch bei moodle hochladen und Link zu anderen Versionen  bei Github oben kommentieren
-* Oben dazuschreiben, was mit den Zusatzfeatures ist und so
-*/
-
-
-#define extra_features false
+#define extra_feature true
 
 #include <iostream>
 #include <iterator>
@@ -87,14 +65,14 @@ int stringToInt(string inString)
 //durchsucht einen Index, also eine map nach dem Suchwort und gibt das dazugehörige Set von ints (also Speicherstellen v. Filmen) zurück
 set <int> search_index(map<string, set <int> >& index_things, string search_val)
 {
-	set <int> ergebnisse;
+	set <int> Ergebnise;
 	// wenn der Suchwert existiert, wird das set kopiert, wenn es nicht existieren 
 	// würde und man würde versuchen es abzufragen gäbe es einen illegalen Speicherplatzzegriff
 	if (index_things.count(search_val))
 	{
-		ergebnisse = index_things.find(search_val)->second;
+		Ergebnise = index_things.find(search_val)->second;
 	}
-	return(ergebnisse);
+	return(Ergebnise);
 }
 
 //date-----------------------------------------------------------------------------------------------------------------------------------------------
@@ -545,7 +523,7 @@ int main()
 	int date_input[3] = { 0,0,0 }; // Tag, Monat und Jahr der Daten zw. denen gesucht wird bei date_added
 	int releaseMin, releaseMax = 0; // Jahre, zwischen und in denen die gesuchten Filme veröffentlicht wurden
 	date dateMin, dateMax; // Daten zwischen und während denen die gesuchten Filme auf Netflix kamen
-	set <int> results; // die Suchergebnisse
+	set <int> results; // die SuchErgebnise
 
 	//Datei einlesen
 	file.open("netflix_titles.csv", ios::in); //öffnet eine Datei im Lesemodus
@@ -659,10 +637,22 @@ int main()
 			cout << "2 DirektorIn" << endl;
 			cout << "3 SchauspielerIn" << endl;
 			cout << "4 Kategorie" << endl;
-			cout << "5 Erscheinungsdatum" << endl << endl;
+			cout << "5 Veröffentlichungsdatum" << endl << endl;
+			if (extra_feature)
+			{
+				cout << "6 Erscheinungsdatum auf Neflix" << endl << endl;
+			}
 			cin >> input;
 			cout << endl;
-			if (input < 1 || input > 5)
+			if (extra_feature)
+			{
+				if (input < 1 || input > 6)
+				{
+					input = 0;
+					cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 6 eingeben." << endl << endl;
+				}
+			}
+			else if (input < 1 || input > 5)
 			{
 				input = 0;
 				cout << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und 5 eingeben." << endl << endl;
@@ -672,7 +662,7 @@ int main()
 		// leert die Konsole
 		cout << "\033[2J\033[1;1H"; // kopiert von https://stackoverflow.com/questions/17335816/clear-screen-using-c (1. Antwort)
 
-		//jeweils die Suchparameter einlesen, die jeweiligen Indizes durchsuchen und Ergebniss im set ergebniss speichern
+		//jeweils die Suchparameter einlesen, die jeweiligen Indizes durchsuchen und Ergebnis im set Ergebnis speichern
 		switch (input)
 		{
 		case 1: // Suche nach Titel
@@ -864,10 +854,12 @@ int main()
 		}
 
 		//leitet einen auf die Seite einer Google suche nach dem Titel weiter
-		if (extra_features)
+		if (extra_feature)
 		{
+			/*
 			//von https://stackoverflow.com/questions/45759764/redirecting-to-a-webpage-in-c (1. Anwort)
 			ShellExecute(NULL, L"open", L"https://stackoverflow.com/questions/45759764/redirecting-to-a-webpage-in-c", nullptr, nullptr, SW_SHOWNORMAL);
+			*/
 		}
 
 		//bricht die Schleife mit der Suche ab oder resetet alle Variabeln
