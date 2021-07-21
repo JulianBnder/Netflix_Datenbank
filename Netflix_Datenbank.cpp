@@ -877,9 +877,8 @@ int main()
 				dateMin.set_date(0, 0, 0);
 				dateMax.set_date(0, 0, 0);
 				releaseMin = releaseMax = 0;
-				input_worked = 0;
 				results.clear();
-				bool input_worked = false;
+				input_worked = false;
 				break;
 			case 2: //beendet Programm
 				retake_search = false;
