@@ -69,7 +69,7 @@ int stringToInt(string inString)
 {
 	int temp = 0;
 	for (unsigned int i = 0; i < inString.size(); i++) // geht den String durch
-	{
+	{ 
 		// wenn es eine weitere Stelle gibt werden die bisherigen 1 Stelle nach links verschoben, also * 10 genommen und die neue wird addiert
 		if (inString[i] < '0' || inString[i] > '9')
 		{
@@ -90,7 +90,7 @@ set <int> search_index(map<string, set <int> >& index_things, string search_val)
 	set <int> ergebnisse;
 	// wenn der Suchwert existiert, wird das set kopiert, wenn es nicht existieren 
 	// würde und man würde versuchen es abzufragen gäbe es einen illegalen Speicherplatzzegriff
-	if (index_things.count(search_val))
+	if (index_things.count(search_val)) 
 	{
 		ergebnisse = index_things.find(search_val)->second;
 	}
@@ -153,15 +153,14 @@ int date::read_date(string inString)
 		// für genauere Erklärung der for Schleife siehe in films::read_in()
 		for (unsigned int i = 0; i < inString.size(); i++)
 		{
-
+			
 			if (inString[i] == ' ') // Datumsbestandteile werden von Leerzeichen getrennt
 			{
-				date_vector.push_back(date_string);
-				date_string = "";
+					date_vector.push_back(date_string);
+					date_string = "";
 			}
 			else if (inString[i] == ',') // Nach dem Tag kommt immer ein Komma, das aussortiert wird
-			{
-			}
+			{}
 			else // alle anderen Zeichen gehören zu einem Datumsbestandteil
 			{
 				date_string = date_string + inString[i];
@@ -220,6 +219,7 @@ int date::read_date(string inString)
 		}
 		else
 		{
+			cout << "Der Monat ist " << date_vector[0] << "; konnte nicht gelesen werden bei Titel ";
 			return -1;
 		}
 
@@ -262,22 +262,22 @@ bool date::operator< (const date& date2) const // von https://www.tutorialspoint
 {
 	// wenn das Jahr kleiner ist, ist das Datum kleiner
 	if (this->year < date2.year)
-	{
+	{ 
 		return true;
 	}
 	// wenn das Jahr gleich und der Monat kleiner ist, ist das Datum kleiner
 	else if ((this->year == date2.year) && (this->month < date2.month))
-	{
+	{ 
 		return true;
 	}
 	// wenn das Jahr und Monat gleich sind und der Tag kleiner ist, ist das Datum kleiner
 	else if ((this->year == date2.year) && (this->month == date2.month) && (this->day < date2.day))
-	{
+	{ 
 		return true;
 	}
 	// sonst ist es gleich oder größer
 	else
-	{
+	{ 
 		return false;
 	}
 }
@@ -300,7 +300,7 @@ date& date::operator++()
 }
 
 // für komplettheit
-date date::operator++(int)
+date date::operator++(int)     
 {
 	date temp = *this;
 	++* this; // erhöht temp mit x++ operator
@@ -308,7 +308,7 @@ date date::operator++(int)
 }
 
 // für komplettheit
-date& date::operator--()
+date& date::operator--()     
 {
 	day--;
 	if (day < 1)
@@ -325,7 +325,7 @@ date& date::operator--()
 }
 
 // für komplettheit
-date date::operator--(int)
+date date::operator--(int)   
 {
 	date temp = *this;
 	--* this; // erhöht temp mit x++ operator
@@ -418,11 +418,11 @@ int film::read_in(string line, string& errorcorrection)
 	Film_data.push_back(sTemp); // am Ende kommt kein Komma => Man muss nochmal den Datenpunk in den Vektor pushen
 
 	// wenn keine 12 Datenpunkte gelesesn wurden ist die Zeile korumpiert
-	if (Film_data.size() != 12)
+	if (Film_data.size() != 12) 
 	{
 		errorcorrection = line; //Zeile wird für Weiterverarbeitung gespeichert, 
 		// wenn es nur ein Datenpunkt ist muss die Zeile davor 12 Datenpunkte haben, d.h. die Beschreibung ist unvollsändig
-		if (Film_data.size() == 1)
+		if (Film_data.size() == 1) 
 		{
 			return -1;
 		}
@@ -641,11 +641,11 @@ int main()
 		}
 
 
-
+		
 		index_title.insert({ collection[j].get_title(), j }); // Namen sind einzigartig => man muss nicht testen ob der Film schon drin ist
 
 		setWithI.erase(j); // j wird aus dem Set gelöscht, damit es wieder leer ist und beim nächsten Film wieder nur der aktuelle Film drinsteht
-	}
+ 	}
 
 	//UI und suche
 	while (retake_search)
@@ -680,8 +680,8 @@ int main()
 			cout << "Bitte Titel eingeben" << endl << endl;
 			cin.ignore(); //braucht man nach cin >> val; um den Buffer zu leeren
 			getline(cin, searchValue);
-			//wenn der Name existiert wird die Nummer abgefragragt, wenn man die Nummer eines nichtexistenten Films abfratgt kommt illegal memory acces violation
-			if (index_title.count(searchValue))
+			//wenn der Name existiert wird die Nummer abgefragragt, wenn man die Nummer eines nichtexistenten Films abfratgt kommt illegal memory acces violationi
+			if (index_title.count(searchValue)) 
 			{
 				results.insert(index_title.find(searchValue)->second); // fügt die Nummer des Films dem Ergebnis hinzu
 			}
@@ -709,7 +709,6 @@ int main()
 		case 4:
 		{
 			cout << "Um eine Kategorie zu waehlen bitte Zahl eingeben:" << endl;
-
 			// um die Kategorien auszuwählen wird daneben ein Zähler angezeigt
 			for (auto category : index_categories)
 			{
@@ -722,12 +721,11 @@ int main()
 				Sleep(30); //weils cool ausshieht
 			}
 			cout << endl;
-
-			// liest die Nummer ein
+			// liest die Nummer ein und zählt dann runter, wenn j 0 ist wurde so oft runtergezählt wie oben hochgezählt => es ist die gleicht Kategorie
 			while (!input_worked)
 			{
 				cin >> i;
-				if (i < 1 || i > index_categories.size()) // wenn i nicht innerhalb der Range der map ist
+				if (i < 1 || i > index_categories.size()) // i muss innerhalb der Grösse der map sein
 				{
 					cout << endl << "ungueltiger Eingabewert, bitte eine Zahl zw. 1 und " << index_categories.size() << " eingeben." << endl << endl;
 					//testen, ob es klappt wenn man die höchste Zahl und die eins drüber eingibt
@@ -738,26 +736,21 @@ int main()
 				}
 			}
 			input_worked = false; //resetten
-
-			// zählt runter; wenn j 0 ist wurde so oft runtergezählt wie oben hochgezählt => es ist die gleicht Kategorie
 			for (auto category : index_categories)
 			{
-				i--;
+				i--; // bei dem Wert, der bei der Kategorie stand, wird die Kategorie eingelesen
 				if (i == 0)
 				{
 					searchValue = category.first;
 				}
 			}
 			i = 0; // resetten
-
-			// wie bei case 2
 			results = search_index(index_categories, searchValue);
 			output_searchValue = "in der Kategorie " + searchValue;
 		}
 		break;
-		case 5: // Suche nach Veröffentlichungsdatum
+		case 5:
 		{
-			// Daten einlesen
 			while (!input_worked)
 			{
 				input_worked = true;
@@ -771,19 +764,16 @@ int main()
 				}
 			}
 
-			//geht alle Jahre dazwischen (einschlieslich Ränder) durch
 			for (int j = releaseMin; j <= releaseMax; j++)
 			{
-				if (index_release.count(j)) // checken ob in dem Jahr etwas veröffentlicht wurde, damit es keine illegal memeory access violation gibt
+				if (index_release.count(j))
 				{
 					for (auto film : index_release.find(j)->second)
 					{
-						results.insert(film); // fügt die Filme in das Ergebnis ein
+						results.insert(film);
 					}
 				}
 			}
-
-			//beschreibt wie die Filme gesucht wurden für die Ausgabe
 			output_searchValue = "die zwischen und einschlieslich ";
 			output_searchValue = output_searchValue + to_string(releaseMin);
 			output_searchValue = output_searchValue + " und ";
@@ -793,41 +783,35 @@ int main()
 		break;
 		case 6:
 		{
-			// Daten einlesen
 			while (!input_worked)
 			{
-				input_worked = true; // wenn nichts schiefgeht kann man aus der Schleife
+				input_worked = true;
 				cout << "Bitte Zeitramen, wann die Filmen und Serien in den Katalog kamen in folgendem Format eingeben:" << endl;
 				cout << "dd mm yyyyy" << endl;
 				cout << "dd mm yyyyy" << endl << endl;
-
 				cin >> date_input[0] >> date_input[1] >> date_input[2];
 				if (dateMin.set_date(date_input[0], date_input[1], date_input[2]))
 				{
 					input_worked = 0;
-					cout << endl << "Eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
+					cout << endl << "eingabeformat fehlerhaft, bitte nochmal versuchen" << endl;
 				}
-
 				cin >> date_input[0] >> date_input[1] >> date_input[2];
 				if (dateMax.set_date(date_input[0], date_input[1], date_input[2]))
 				{
 					input_worked = 0;
 					cout << endl << "Eingabeformat fehlerhaft, bitte nochmal versuchen" << endl << endl;
 				}
-
+				date_input[0] = date_input[1] = date_input[2] = 0;
 				if (dateMax < dateMin)
 				{
 					input_worked = 0;
 					cout << endl << "Das Ende kann nicht vor dem Anfang sein, bitte nochmal versuchen" << endl << endl;
 				}
 			}
-			date_input[0] = date_input[1] = date_input[2] = 0;
 
-			//geht alle Daten durch und fügt die jeweiligen Filme dem Ergebnis hinzu
-			dateMax++; // es gibt kein <= Operator, nur ein < Operator 
+			dateMax++;
 			for (date j = dateMin; j < dateMax; j++)
 			{
-				//wenn der Name existiert wird die Nummer abgefragragt, wenn man die Nummer eines nichtexistenten Films abfratgt kommt illegal memory acces violation
 				if (index_date_added.count(j))
 				{
 					for (auto film : index_date_added.find(j)->second)
@@ -836,8 +820,6 @@ int main()
 					}
 				}
 			}
-
-			//beschreibt wie die Filme gesucht wurden für die Ausgabe
 			output_searchValue = "die zwischen und einschlieslich ";
 			output_searchValue = output_searchValue + dateMin.get_date_as_string();
 			output_searchValue = output_searchValue + " und ";
@@ -845,32 +827,32 @@ int main()
 			output_searchValue = output_searchValue + " auf Netflix kamen";
 		}
 		break;
+		default:
+			cout << " Es wurde eine ungueltige Nummer beim Suchkriterium eingegeben" << endl;
+			break;
 		}
 		input = 0;
-		// wenn nichts gefunden wurde
+
+
 		if (results.size() == 0)
 		{
-			cout << "keine Filmen und Serien " << output_searchValue/*siehe oben z.B. in Zeile 785*/ << " bei Netflix verfuegbar" << endl << endl;
+			cout << "keine Filmen und Serien " << output_searchValue << " bei Netflix verfuegbar" << endl << endl;
 		}
-		else // wenn etwas gefunden wurde
+		else
 		{
 			cout << "Folgende Filmen und Serien " << output_searchValue << " sind bei Netflix verfuegbar: " << endl << endl;
 
 			for (auto film : results)
 			{
-				Sleep(10); //weils cool aussieht
+				Sleep(10);
 				cout << collection[film].get_title() << endl;
 			}
-		}
+			}
+#if extra_features
+		//von https://stackoverflow.com/questions/45759764/redirecting-to-a-webpage-in-c (1. Anwort)
+		ShellExecute(NULL, L"open", L"https://stackoverflow.com/questions/45759764/redirecting-to-a-webpage-in-c", nullptr, nullptr, SW_SHOWNORMAL);
+#endif // extra_features
 
-		//leitet einen auf die Seite einer Google suche nach dem Titel weiter
-		if (extra_features)
-		{
-			//von https://stackoverflow.com/questions/45759764/redirecting-to-a-webpage-in-c (1. Anwort)
-			ShellExecute(NULL, L"open", L"https://stackoverflow.com/questions/45759764/redirecting-to-a-webpage-in-c", nullptr, nullptr, SW_SHOWNORMAL);
-		}
-
-		//bricht die Schleife mit der Suche ab oder resetet alle Variabeln
 		while (input == 0)
 		{
 			cout << endl << "Wollen Sie noch nach etwas anderem suchen?" << endl;
@@ -879,17 +861,15 @@ int main()
 
 			switch (input)
 			{
-			case 1: //reset
+			case 1:
 				cout << "\033[2J\033[1;1H";
 				searchValue = "";
 				dateMin.set_date(0, 0, 0);
 				dateMax.set_date(0, 0, 0);
-				releaseMin = releaseMax = 0;
 				input_worked = 0;
 				results.clear();
-				bool input_worked = false;
 				break;
-			case 2: //beendet Programm
+			case 2:
 				retake_search = false;
 				break;
 			default:
@@ -899,5 +879,5 @@ int main()
 			}
 		}
 		input = 0;
+		}
 	}
-}
