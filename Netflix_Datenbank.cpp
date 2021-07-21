@@ -13,7 +13,7 @@
 using namespace std;
 using std::cout; // manchmal kam der Fehler cout is ambiguous
 
-//Funktionen-ohne------------------------------------------------------------------------------------------------------------------------------------
+//Funktionen-ohne----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // bekommt ein Sting mit Kommas und gibt die Sachen zwischen den Kommas getrennt als Set zurück
 set <string> read_set(string inString)
@@ -75,7 +75,7 @@ set <int> search_index(map<string, set <int> >& index_things, string search_val)
 	return(Ergebnise);
 }
 
-//date-----------------------------------------------------------------------------------------------------------------------------------------------
+//date---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class date
 {
@@ -310,7 +310,7 @@ date date::operator--(int)
 	return temp;
 }
 
-//films----------------------------------------------------------------------------------------------------------------------------------------------
+//films--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // speichert alle Daten zu jeweils einem Film
 class film
@@ -490,7 +490,7 @@ string film::get_description()
 	return(description);
 }
 
-//main-----------------------------------------------------------------------------------------------------------------------------------------------
+//main---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // liest erst die .csv Datein ein, indexiert sie dann mit verschiedenen 
 // Schlüsseln und erlaubt dem User dann die Datenbankzu durchsuchen
@@ -851,15 +851,6 @@ int main()
 				Sleep(10); //weils cool aussieht
 				cout << collection[film].get_title() << endl;
 			}
-		}
-
-		//leitet einen auf die Seite einer Google suche nach dem Titel weiter
-		if (extra_feature)
-		{
-			/*
-			//von https://stackoverflow.com/questions/45759764/redirecting-to-a-webpage-in-c (1. Anwort)
-			ShellExecute(NULL, L"open", L"https://stackoverflow.com/questions/45759764/redirecting-to-a-webpage-in-c", nullptr, nullptr, SW_SHOWNORMAL);
-			*/
 		}
 
 		//bricht die Schleife mit der Suche ab oder resetet alle Variabeln
