@@ -685,7 +685,6 @@ int main()
 			cout << "Bitte Titel eingeben" << endl << endl;
 			cin.ignore();
 			std::getline(std::cin, searchValue);
-			cout << "output " << searchValue ;
 			if (index_name.count(searchValue))
 			{
 				results.insert(index_name.find(searchValue)->second);
@@ -780,9 +779,13 @@ int main()
 				}
 			}
 			output_searchValue = "die zwischen und einschlieslich " + releaseMin;
+			cout << output_searchValue;
 			output_searchValue = output_searchValue + " und ";
+			cout << output_searchValue;
 			output_searchValue = output_searchValue + to_string(releaseMax);
+			cout << output_searchValue;
 			output_searchValue = output_searchValue + " veroeffentlicht wurden";
+			cout << output_searchValue;
 		}
 		break;
 		case 6:
@@ -851,7 +854,7 @@ int main()
 		}
 		else
 		{
-			cout << "Folgende Filmen und Serien " << output_searchValue << "sind bei Netflix verfuegbar: " << endl << endl;
+			cout << "Folgende Filmen und Serien " << output_searchValue << " sind bei Netflix verfuegbar: " << endl << endl;
 #if debugging
 			cout << results.size() << endl;
 #endif // debugging
@@ -875,9 +878,6 @@ int main()
 			cout << endl << "Wollen Sie noch nach etwas anderem suchen?" << endl;
 			cout << "Ja(1) oder Nein(2)" << endl << endl;
 			cin >> eingabe;
-#if debugging
-			cout << eingabe << endl;
-#endif // debugging
 
 			switch (eingabe)
 			{
