@@ -665,7 +665,8 @@ int main()
 			cout << "4 Kategorie" << endl;
 			cout << "5 Erscheinungsdatum" << endl << endl;
 			cin >> eingabe;
-			cout << endl;
+			/*getline(cin, eingabe_string);
+			eingabe = stringToInt(eingabe_string);*/
 			if (eingabe < 1 || eingabe > 5)
 			{
 				eingabe = 0;
